@@ -2,4 +2,4 @@
 
 We got this! I will update you soon - Rashik
 \n Test commit and push - Aarib
-Leave the rest for me - Sanzana
+\n Did some part, but will make it better once the initial stages are done. - Sanzana
