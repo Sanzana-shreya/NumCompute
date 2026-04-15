@@ -50,7 +50,7 @@ def f1(y_true, y_pred):
     return 2 * p * r / (p + r + 1e-9)
 
 
-# Regression Metric
+# Regression Metrics
 
 def mse(y_true, y_pred):
     y_true = np.asarray(y_true)
@@ -58,12 +58,41 @@ def mse(y_true, y_pred):
     return np.mean((y_true - y_pred) ** 2)
 
 
+
+
+# Root Mean Squared Error (RMSE)
+def rmse(y_true, y_pred):
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    return np.sqrt(np.mean((y_true - y_pred) ** 2))
+
+
+# Mean Absolute Error (MAD / MAE)
+def mad(y_true, y_pred):
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    return np.mean(np.abs(y_true - y_pred))
+
+
+# Mean Absolute Percentage Error (MAPE)
+def mape(y_true, y_pred):
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
+    # avoid division by zero
+    non_zero = y_true != 0
+    y_true = y_true[non_zero]
+    y_pred = y_pred[non_zero]
+
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+
+
 # For ROC Curve (Binary) 
 
 def roc_curve(y_true, y_scores):
-    """
-    y_scores: probability scores (not labels)
-    """
+    
+    #y_scores: probability scores (not labels)
+    
     y_true = np.asarray(y_true)
     y_scores = np.asarray(y_scores)
 
@@ -89,4 +118,4 @@ def auc(fpr, tpr):
 
     # Trapezoidal rule
     
-    return np.trapz(tpr, fpr)
+    return np.trapezoid(tpr, fpr)
