@@ -33,3 +33,29 @@ class MinMaxScaler:
     def fit_transform(self, X):
         return self.fit(X).transform(X)
     
+
+class OneHotEncoder:
+    def __init__(self):
+        self.categories = None
+
+    def fit(self, X):
+        self.categories = [np.unique(X[:, i]) for i in range(X.shape[1])]
+        return self
+    
+    def transform(self, X):
+
+        if self.categories is None:
+            raise ValueError("The encoder has not been fitted yet.")
+        encoded_columns = []
+
+        for i in range(X.shape[1]):
+            col = X[:, i]
+            categories = self.categories[i]
+
+            one_hot = (col[:, None] == categories).astype(int)
+            encoded_columns.append(one_hot)
+
+        return np.hstack(encoded_columns)
+    
+    def fit_transform(self, X):
+        return self.fit(X).transform(X)
