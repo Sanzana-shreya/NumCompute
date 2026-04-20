@@ -59,3 +59,39 @@ class OneHotEncoder:
     
     def fit_transform(self, X):
         return self.fit(X).transform(X)
+    
+
+class ColumnTransformer:
+    def __init__(self, num_cols, cat_cols):
+        self.num_cols = num_cols
+        self.cat_cols = cat_cols
+        self.scaler = StandardScaler()
+        self.encoder = OneHotEncoder()
+
+    def fit(self, X):
+        if len(self.num_cols) > 0:
+            X_num = X[:, self.num_cols].astype(float)
+            self.scaler.fit(X_num)
+
+        if len(self.cat_cols) > 0:
+            X_cat = X[:, self.cat_cols]
+            self.encoder.fit(X_cat)
+        
+
+        return self
+    
+    def transform(self, X):
+        parts = []
+
+        if len(self.num_cols) > 0:
+            X_num = X[:, self.num_cols].astype(float)
+            parts.append(self.scaler.transform(X_num))
+
+        if len(self.cat_cols) > 0:
+            X_cat = X[:, self.cat_cols]
+            parts.append(self.encoder.transform(X_cat))
+
+        return np.hstack(parts)
+    
+    def fit_transform(self, X):
+        return self.fit(X).transform(X)

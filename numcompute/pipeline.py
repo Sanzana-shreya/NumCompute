@@ -4,7 +4,8 @@ class Pipeline:
 
     def fit(self, X):
         for name, step in self.steps:
-            X = step.fit(X)
+            step.fit(X)
+            X = step.transform(X)
         return X
     
     def transform(self, X):
@@ -14,11 +15,10 @@ class Pipeline:
     
     def fit_transform(self, X):
         for name, step in self.steps:
-            X = step.fit(X)
+            step.fit(X)
             X = step.transform(X)
         return X
     
     def predict(self, X):
-        for name, step in self.steps:
-            X = step.transform(X)
-        return X
+        return self.transform(X)
+    
