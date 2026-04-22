@@ -11,6 +11,8 @@ class StandardScaler:
         return self
 
     def transform(self, X):
+        if self.mean is None or self.std is None:
+            raise ValueError("StandardScaler has not been fitted yet.")
         return (X - self.mean) / self.std
     
     def fit_transform(self, X):
@@ -28,6 +30,8 @@ class MinMaxScaler:
         return self
     
     def transform(self, X):
+        if self.min is None or self.max is None:
+            raise ValueError("MinMaxScaler has not been fitted yet.")
         return (X - self.min) / (self.max - self.min)
     
     def fit_transform(self, X):
@@ -43,9 +47,8 @@ class OneHotEncoder:
         return self
     
     def transform(self, X):
-
         if self.categories is None:
-            raise ValueError("The encoder has not been fitted yet.")
+            raise ValueError("OneHotEncoder has not been fitted yet.")
         encoded_columns = []
 
         for i in range(X.shape[1]):
@@ -77,10 +80,13 @@ class ColumnTransformer:
             X_cat = X[:, self.cat_cols]
             self.encoder.fit(X_cat)
         
-
         return self
     
     def transform(self, X):
+        if (len(self.num_cols) > 0 and self.scaler.mean is None) or \
+           (len(self.cat_cols) > 0 and self.encoder.categories is None):
+            raise ValueError("ColumnTransformer has not been fitted yet.")
+        
         parts = []
 
         if len(self.num_cols) > 0:
