@@ -1,3 +1,4 @@
+#testing OneHotEmcoder with simple categorical data
 import numpy as np
 from numcompute.preprocessing import OneHotEncoder
 

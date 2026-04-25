@@ -1,3 +1,4 @@
+#testing pipeline with preprocessing on mixed data
 import numpy as np
 from numcompute.pipeline import Pipeline
 from numcompute.preprocessing import StandardScaler
@@ -9,6 +10,7 @@ X = np.array([
     [22, "Female"]
 ])
 
+#pipeline applying encoding step
 pipe = Pipeline([
     ("encode", OneHotEncoder())
 ])
