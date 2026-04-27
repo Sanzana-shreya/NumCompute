@@ -1,6 +1,8 @@
+#testing StandardScaler and MinMaxScaler with simple numeric data
 import numpy as np
 from numcompute.preprocessing import StandardScaler, MinMaxScaler
 
+#simple numeric dataset for testing scaling
 # sample data
 X = np.array([
     [1, 2],

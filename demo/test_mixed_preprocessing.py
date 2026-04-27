@@ -1,3 +1,4 @@
+#testqing separate preprocessing for numeric and categorical data
 import numpy as np
 from numcompute.preprocessing import StandardScaler, OneHotEncoder
 
@@ -19,6 +20,7 @@ encoder = OneHotEncoder()
 X_num_scaled = scaler.fit_transform(X_num)
 X_cat_encoded = encoder.fit_transform(X_cat)
 
+#combining scaled numeroc and encoded categorical data
 X_final = np.hstack((X_num_scaled, X_cat_encoded))
 
 print("Scaled numeric:\n", X_num_scaled)
