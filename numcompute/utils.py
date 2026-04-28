@@ -2,7 +2,7 @@ import numpy as np
 
 
 def _validate_numeric_array(X, name="Input"):
-    # Converts input into numpy array and checks numeric type
+    # Ensures input is a NumPy array and contains only numeric values
     X = np.asarray(X)
 
     if not np.issubdtype(X.dtype, np.number):
@@ -21,7 +21,7 @@ def euclidean_distance(x1, x2):
     if x1.shape != x2.shape:
         raise ValueError("x1 and x2 must have the same shape")
 
-    # Euclidean distance = square root of sum of squared differences
+    # L2 norm: square root of summed squared differences
     return np.sqrt(np.sum((x1 - x2) ** 2))
 
 
@@ -35,7 +35,7 @@ def manhattan_distance(x1, x2):
     if x1.shape != x2.shape:
         raise ValueError("x1 and x2 must have the same shape")
 
-    # Manhattan distance = sum of absolute differences
+    # L1 norm: sum of absolute differences
     return np.sum(np.abs(x1 - x2))
 
 
@@ -52,10 +52,10 @@ def cosine_distance(x1, x2):
     norm_x1 = np.linalg.norm(x1)
     norm_x2 = np.linalg.norm(x2)
 
+    # Avoid division by zero for zero vectors
     if norm_x1 == 0 or norm_x2 == 0:
         raise ValueError("cosine_distance is undefined for zero vectors")
 
-    # Cosine distance = 1 - cosine similarity
     cosine_similarity = np.dot(x1, x2) / (norm_x1 * norm_x2)
 
     return 1 - cosine_similarity
@@ -63,7 +63,7 @@ def cosine_distance(x1, x2):
 
 def pairwise_distances(X, Y=None, metric="euclidean"):
     if metric not in ["euclidean", "manhattan", "cosine"]:
-        raise ValueError("Invalid metric. Supported metrics are: 'euclidean', 'manhattan', 'cosine'.")
+        raise ValueError("Invalid metric. Supported: euclidean, manhattan, cosine")
 
     X = _validate_numeric_array(X, "X").astype(float)
 
@@ -82,22 +82,21 @@ def pairwise_distances(X, Y=None, metric="euclidean"):
         raise ValueError("X and Y must have the same number of features")
 
     if metric == "euclidean":
-        # Vectorized Euclidean distance using broadcasting
+        # Broadcasting expands (n,d) and (m,d) into (n,m,d)
         diff = X[:, None, :] - Y[None, :, :]
         return np.sqrt(np.sum(diff ** 2, axis=2))
 
     elif metric == "manhattan":
-        # Vectorized Manhattan distance using broadcasting
         diff = X[:, None, :] - Y[None, :, :]
         return np.sum(np.abs(diff), axis=2)
 
     elif metric == "cosine":
-        # Vectorized cosine distance
+        # Normalize rows before dot product
         X_norm = np.linalg.norm(X, axis=1)
         Y_norm = np.linalg.norm(Y, axis=1)
 
         if np.any(X_norm == 0) or np.any(Y_norm == 0):
-            raise ValueError("cosine distance is undefined for zero vectors")
+            raise ValueError("cosine distance undefined for zero vectors")
 
         similarity = (X @ Y.T) / (X_norm[:, None] * Y_norm[None, :])
 
@@ -107,14 +106,15 @@ def pairwise_distances(X, Y=None, metric="euclidean"):
 def sigmoid(x):
     x = _validate_numeric_array(x, "x").astype(float)
 
-    # Stable sigmoid to reduce overflow problems
     result = np.empty_like(x, dtype=float)
 
     positive = x >= 0
     negative = ~positive
 
+    # Stable sigmoid for positive values
     result[positive] = 1 / (1 + np.exp(-x[positive]))
 
+    # Stable sigmoid for negative values (avoids overflow)
     exp_x = np.exp(x[negative])
     result[negative] = exp_x / (1 + exp_x)
 
@@ -127,7 +127,7 @@ def logsumexp(x, axis=None):
     if x.size == 0:
         raise ValueError("logsumexp expects a non-empty array")
 
-    # Stable logsumexp using max-shift trick
+    # Max-shift trick for numerical stability
     max_x = np.max(x, axis=axis, keepdims=True)
 
     shifted = x - max_x
@@ -145,8 +145,9 @@ def softmax(x, axis=-1):
     if x.size == 0:
         raise ValueError("softmax expects a non-empty array")
 
-    # Stable softmax using max-shift trick
+    # Max-shift trick prevents overflow in exponentiation
     max_x = np.max(x, axis=axis, keepdims=True)
+
     exp_x = np.exp(x - max_x)
     sum_exp = np.sum(exp_x, axis=axis, keepdims=True)
 
@@ -168,7 +169,7 @@ def batch_iterator(X, batch_size, y=None, shuffle=False, random_state=None):
         y = np.asarray(y)
 
         if len(y) != n_samples:
-            raise ValueError("X and y must have the same number of samples")
+            raise ValueError("X and y must have same number of samples")
 
     indices = np.arange(n_samples)
 
@@ -176,7 +177,7 @@ def batch_iterator(X, batch_size, y=None, shuffle=False, random_state=None):
         rng = np.random.default_rng(random_state)
         rng.shuffle(indices)
 
-    # Initialize Minibatches
+    # Yield mini-batches lazily (memory efficient generator)
     for start in range(0, n_samples, batch_size):
         end = start + batch_size
         batch_idx = indices[start:end]

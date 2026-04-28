@@ -1,11 +1,10 @@
 from typing import Union, Sequence, Optional, Dict, Any
 import numpy as np
 
-ArrayLike = Union[Sequence[float], np.ndarray]  # Accepts Python lists, tuples, or NumPy arrays of numbers
+ArrayLike = Union[Sequence[float], np.ndarray]  # Accepts lists, tuples, or NumPy arrays
 
 
 # Validation Helper
-
 def _validate_array(
     X: ArrayLike,
     allow_empty: bool = False
@@ -13,19 +12,21 @@ def _validate_array(
     """
     Validates and converts input into a NumPy array.
 
-    - Ensures input is not None
-    - Ensures input is numeric
-    - Optionally allows empty arrays
+    Ensures:
+    - input is not None
+    - input is numeric
+    - optionally allows empty arrays
     """
     if X is None:
         raise ValueError("Input cannot be None")
 
-    arr = np.asarray(X)  # Convert input to NumPy array
+    arr = np.asarray(X)
 
-    if not np.issubdtype(arr.dtype, np.number):  # Checks if array contains numeric data
+    if not np.issubdtype(arr.dtype, np.number):
         raise ValueError("Input must be numeric")
 
-    if not allow_empty and arr.size == 0:   # Prevent empty arrays unless explicitly allowed
+    # Enforce non-empty constraint unless explicitly allowed
+    if not allow_empty and arr.size == 0:
         raise ValueError("Input array cannot be empty")
 
     return arr
@@ -34,31 +35,36 @@ def _validate_array(
 # Basic Statistics
 
 # Mean
-def mean(X: ArrayLike, axis: Optional[int] = None) -> float:  # Compute mean while ignoring NaN values
+def mean(X: ArrayLike, axis: Optional[int] = None) -> float:
+    # Uses NaN-safe mean to handle missing values in datasets
     X = _validate_array(X)
     return np.nanmean(X, axis=axis)
 
 
 # Median
-def median(X: ArrayLike, axis: Optional[int] = None) -> float:  # Compute median while ignoring NaN values
+def median(X: ArrayLike, axis: Optional[int] = None) -> float:
+    # Robust to outliers; ignores NaN values
     X = _validate_array(X)
     return np.nanmedian(X, axis=axis)
 
 
 # Standard Deviation
-def std(X: ArrayLike, axis: Optional[int] = None) -> float:  # Compute standard deviation while ignoring NaNs
+def std(X: ArrayLike, axis: Optional[int] = None) -> float:
+    # Measures spread; NaN-safe for real-world datasets
     X = _validate_array(X)
     return np.nanstd(X, axis=axis)
 
 
 # Minimum
-def minimum(X: ArrayLike, axis: Optional[int] = None) -> float:  # Compute minimum value while ignoring NaNs
+def minimum(X: ArrayLike, axis: Optional[int] = None) -> float:
+    # Returns smallest value while ignoring missing data
     X = _validate_array(X)
     return np.nanmin(X, axis=axis)
 
 
 # Maximum
-def maximum(X: ArrayLike, axis: Optional[int] = None) -> float:  # Compute maximum value while ignoring NaNs
+def maximum(X: ArrayLike, axis: Optional[int] = None) -> float:
+    # Returns largest value while ignoring missing data
     X = _validate_array(X)
     return np.nanmax(X, axis=axis)
 
@@ -72,12 +78,14 @@ def histogram(
     """
     Compute histogram of the data.
 
-    - bins: number of bins (must be positive integer)
-    - range: lower and upper range of bins
+    Parameters:
+    - bins: number of intervals (must be positive integer)
+    - range: optional min/max range for binning
     """
-    X = _validate_array(X, allow_empty=True)  # Allows empty arrays (NumPy can handle this case)
+    X = _validate_array(X, allow_empty=True)
 
-    if not isinstance(bins, int) or bins <= 0:  # Validate bins input
+    # Ensure valid bin configuration for NumPy histogram
+    if not isinstance(bins, int) or bins <= 0:
         raise ValueError("bins must be a positive integer")
 
     return np.histogram(X, bins=bins, range=range)
@@ -90,16 +98,17 @@ def quantiles(
     axis: Optional[int] = None
 ) -> Union[float, np.ndarray]:
     """
-    Compute percentiles (0–100 scale).
+    Compute quantiles (percentile scale: 0–100).
 
-    - q can be a single value or a list of percentiles
-    - NaN values are ignored
+    q can be scalar or list of values.
+    NaN values are ignored for robustness in real datasets.
     """
     X = _validate_array(X)
 
-    q_arr = np.asarray(q)  # Convert q into NumPy array for uniform handling
+    q_arr = np.asarray(q)
 
-    if np.any((q_arr < 0) | (q_arr > 100)):  # Ensures if all percentile values are within valid range
+    # Ensure percentile range is valid
+    if np.any((q_arr < 0) | (q_arr > 100)):
         raise ValueError("q must be between 0 and 100")
 
     return np.nanpercentile(X, q_arr, axis=axis)
@@ -111,8 +120,13 @@ def describe(
     axis: int = 0
 ) -> Dict[str, Any]:
     """
-    Return a summary of basic statistics:
-    mean, standard deviation, min, max.
+    Returns summary statistics of dataset.
+
+    Includes:
+    - mean
+    - standard deviation
+    - min
+    - max
     """
     X = _validate_array(X)
 

@@ -1,13 +1,42 @@
 import numpy as np
+from typing import Tuple
 
 
 # Validation Helper
-def _validate_inputs(y_true, y_pred=None):
+def _validate_inputs(
+    y_true: np.ndarray,
+    y_pred: np.ndarray | None = None
+) -> Tuple[np.ndarray, np.ndarray | None]:
     """
-    Validate inputs for metrics.
+    Validate inputs for metric computations.
 
-    - Ensures arrays are numeric
-    - Ensures same shape for y_true and y_pred
+    Parameters
+    ----------
+    y_true : array-like of shape (n_samples,)
+        Ground truth target values.
+    y_pred : array-like of shape (n_samples,), optional
+        Predicted target values.
+
+    Returns
+    -------
+    y_true : np.ndarray of shape (n_samples,)
+        Validated ground truth array.
+    y_pred : np.ndarray of shape (n_samples,) or None
+        Validated prediction array.
+
+    Raises
+    ------
+    ValueError
+        If inputs are None, non-numeric, or shapes mismatch.
+
+    Notes
+    -----
+    Ensures inputs are NumPy arrays and numeric.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(n)
     """
     if y_true is None:
         raise ValueError("y_true cannot be None")
@@ -24,7 +53,9 @@ def _validate_inputs(y_true, y_pred=None):
             raise ValueError("y_pred must be numeric")
 
         if y_true.shape != y_pred.shape:
-            raise ValueError("y_true and y_pred must have the same shape")
+            raise ValueError(
+                f"Shape mismatch: y_true {y_true.shape}, y_pred {y_pred.shape}"
+            )
 
     return y_true, y_pred
 
@@ -32,13 +63,62 @@ def _validate_inputs(y_true, y_pred=None):
 # For Classification Metrics 
 
 # Accuracy
-def accuracy(y_true, y_pred):
+def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute classification accuracy.
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n_samples,)
+        Ground truth labels.
+    y_pred : np.ndarray of shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    float
+        Fraction of correctly predicted samples.
+
+    Notes
+    -----
+    Works for binary and multiclass classification.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
-    return np.mean(y_true == y_pred)
+    return float(np.mean(y_true == y_pred))
 
 
 # Confusion Matrix
-def confusion_matrix(y_true, y_pred):
+def confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+    """
+    Compute confusion matrix.
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n_samples,)
+        Ground truth labels.
+    y_pred : np.ndarray of shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    np.ndarray of shape (n_classes, n_classes)
+        Confusion matrix where rows correspond to true labels
+        and columns correspond to predicted labels.
+
+    Notes
+    -----
+    Supports multiclass classification.
+
+    Complexity
+    ----------
+    Time: O(n * k^2)
+    Space: O(k^2)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
 
     classes = np.unique(np.concatenate([y_true, y_pred]))  # all unique labels
@@ -55,7 +135,32 @@ def confusion_matrix(y_true, y_pred):
 
 
 # Precision
-def precision(y_true, y_pred):
+def precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute precision for binary classification.
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n_samples,)
+        Ground truth binary labels (0 or 1).
+    y_pred : np.ndarray of shape (n_samples,)
+        Predicted binary labels.
+
+    Returns
+    -------
+    float
+        Precision score.
+
+    Raises
+    ------
+    ValueError
+        If no positive predictions exist.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
 
     # Assumes binary classification (0 and 1)
@@ -65,11 +170,36 @@ def precision(y_true, y_pred):
     if tp + fp == 0:
         raise ValueError("No positive predictions; precision undefined")
 
-    return tp / (tp + fp)
+    return float(tp / (tp + fp))
 
 
 # Recall
-def recall(y_true, y_pred):
+def recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute recall for binary classification.
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n_samples,)
+        Ground truth binary labels (0 or 1).
+    y_pred : np.ndarray of shape (n_samples,)
+        Predicted binary labels.
+
+    Returns
+    -------
+    float
+        Recall score.
+
+    Raises
+    ------
+    ValueError
+        If no actual positives exist.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
 
     # Assumes binary classification (0 and 1)
@@ -79,41 +209,112 @@ def recall(y_true, y_pred):
     if tp + fn == 0:
         raise ValueError("No actual positives; recall undefined")
 
-    return tp / (tp + fn)
+    return float(tp / (tp + fn))
 
 
 # F1 Score
-def f1(y_true, y_pred):
+def f1(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute F1 score for binary classification.
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n_samples,)
+        Ground truth labels.
+    y_pred : np.ndarray of shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    float
+        F1 score.
+
+    Raises
+    ------
+    ValueError
+        If precision and recall are both zero.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
     p = precision(y_true, y_pred)
     r = recall(y_true, y_pred)
 
     if p + r == 0:
         raise ValueError("Precision and Recall are zero; F1 undefined")
 
-    return 2 * p * r / (p + r)
+    return float(2 * p * r / (p + r))
 
 
 # Regression Metrics
 
-def mse(y_true, y_pred):
+def mse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute Mean Squared Error (MSE).
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n_samples,)
+    y_pred : np.ndarray of shape (n_samples,)
+
+    Returns
+    -------
+    float
+        Mean squared error.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
-    return np.mean((y_true - y_pred) ** 2)
+    return float(np.mean((y_true - y_pred) ** 2))
 
 
 # Root Mean Squared Error (RMSE)
-def rmse(y_true, y_pred):
+def rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute Root Mean Squared Error (RMSE).
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
-    return np.sqrt(np.mean((y_true - y_pred) ** 2))
+    return float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
 
 
 # Mean Absolute Error (MAD / MAE)
-def mad(y_true, y_pred):
+def mad(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute Mean Absolute Error (MAE).
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
-    return np.mean(np.abs(y_true - y_pred))
+    return float(np.mean(np.abs(y_true - y_pred)))
 
 
 # Mean Absolute Percentage Error (MAPE)
-def mape(y_true, y_pred):
+def mape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Compute Mean Absolute Percentage Error (MAPE).
+
+    Notes
+    -----
+    Ignores zero values in y_true to avoid division by zero.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(n)
+    """
     y_true, y_pred = _validate_inputs(y_true, y_pred)
 
     # avoid division by zero
@@ -125,13 +326,35 @@ def mape(y_true, y_pred):
     y_true = y_true[non_zero]
     y_pred = y_pred[non_zero]
 
-    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+    return float(np.mean(np.abs((y_true - y_pred) / y_true)) * 100)
 
 
 # For ROC Curve (Binary) 
 
-def roc_curve(y_true, y_scores):
-    
+def roc_curve(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Compute ROC curve for binary classification.
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n_samples,)
+        Binary ground truth labels (0 or 1).
+    y_scores : np.ndarray of shape (n_samples,)
+        Predicted probability scores.
+
+    Returns
+    -------
+    fpr : np.ndarray
+        False positive rates.
+    tpr : np.ndarray
+        True positive rates.
+
+    Complexity
+    ----------
+    Time: O(n log n)
+    Space: O(n)
+    """
+
     #y_scores: probability scores (not labels)
     
     if y_true is None or y_scores is None:
@@ -169,7 +392,27 @@ def roc_curve(y_true, y_scores):
 
 # For AUC 
 
-def auc(fpr, tpr):
+def auc(fpr: np.ndarray, tpr: np.ndarray) -> float:
+    """
+    Compute Area Under the Curve (AUC) using trapezoidal rule.
+
+    Parameters
+    ----------
+    fpr : np.ndarray
+        False positive rates.
+    tpr : np.ndarray
+        True positive rates.
+
+    Returns
+    -------
+    float
+        AUC score.
+
+    Complexity
+    ----------
+    Time: O(n)
+    Space: O(1)
+    """
 
     # Trapezoidal rule
     
@@ -182,4 +425,4 @@ def auc(fpr, tpr):
     if len(fpr) < 2:
         raise ValueError("At least two points required to compute AUC")
 
-    return np.trapezoid(tpr, fpr)
+    return float(np.trapz(tpr, fpr))
