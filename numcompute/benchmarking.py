@@ -232,7 +232,7 @@ def save_results(results):
 def main():
     all_results = []
 
-    print("Loading datasets...\n")
+    print("Loading the datasets....\n")
 
     for name, path in DATASETS.items():
         if not path.exists():
