@@ -8,6 +8,7 @@ from numcompute.io import read_csv
 from numcompute.stats import mean, std
 from numcompute.sort_search import sort, topk
 from numcompute.rank import rank, percentile
+from numcompute.utils import pairwise_distances
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,27 +35,35 @@ def timer(func, *args, repeat=5):
 
 
 def load_numeric_csv(path):
-    data = np.genfromtxt(
-        path,
-        delimiter=",",
-        names=True,
-        dtype=None,
-        encoding="utf-8",
-        missing_values="",
-        filling_values=np.nan,
-    )
+    raw = read_csv(path, delimiter=",", dtype=object)
+
+    # If CSV has header row, remove it
+    raw = np.asarray(raw, dtype=object)
+
+    if raw.ndim == 1:
+        raw = raw.reshape(-1, 1)
+
+    # Remove first row as header
+    data = raw[1:, :]
 
     numeric_cols = []
 
-    for name in data.dtype.names:
-        col = data[name]
+    for i in range(data.shape[1]):
+        col = data[:, i]
 
-        if np.issubdtype(col.dtype, np.number):
-            numeric_cols.append(col.astype(float))
+        try:
+            numeric_col = col.astype(float)
+            numeric_cols.append(numeric_col)
+        except (ValueError, TypeError):
+            # Categorical columns are ignored for benchmarking
+            continue
+
+    if not numeric_cols:
+        raise ValueError(f"No numeric columns found in {path}")
 
     X = np.column_stack(numeric_cols)
 
-    # removing rows with NaN
+    # Remove the rows with NaN or infinity
     X = X[np.isfinite(X).all(axis=1)]
 
     return X
@@ -120,6 +129,19 @@ def loop_percentile(arr, q):
     return arr[lower] * (1 - weight) + arr[upper] * weight
 
 
+def loop_pairwise_distances(X, Y):
+    distances = []
+
+    for x in X:
+        row = []
+        for y in Y:
+            dist = np.sqrt(np.sum((x - y) ** 2))
+            row.append(dist)
+        distances.append(row)
+
+    return np.array(distances)
+
+
 # ---------------- BENCHMARK ---------------- #
 
 def benchmark_dataset(name, X):
@@ -157,6 +179,23 @@ def benchmark_dataset(name, X):
             "speedup": t_loop / t_my if t_my > 0 else np.inf,
         })
 
+    # Pairwise distance benchmark from utils.py
+    # Kept separate because pairwise distance is O(n^2)
+    n_pairwise = min(100, X.shape[0])
+    X_small = X[:n_pairwise, :]
+
+    t_loop = timer(loop_pairwise_distances, X_small, X_small)
+    t_my = timer(pairwise_distances, X_small, X_small)
+
+    results.append({
+        "dataset": name,
+        "operation": "pairwise_distances",
+        "loop": t_loop,
+        "numcompute": t_my,
+        "numpy": None,
+        "speedup": t_loop / t_my if t_my > 0 else np.inf,
+    })
+
     return results
 
 
@@ -167,7 +206,7 @@ def print_results(results):
     print("-" * 95)
 
     for r in results:
-        np_val = f"{r['numpy']:.6f}" if r["numpy"] else "N/A"
+        np_val = f"{r['numpy']:.6f}" if r["numpy"] is not None else "N/A"
 
         print(
             f"{r['dataset']:<10}"
