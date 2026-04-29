@@ -9,7 +9,8 @@ def sort(arr,axis = -1,descending=False):
 def multisort(arr,keys,axis=-1):
     if arr.ndim != 2:
         raise ValueError("Input array must be 2D.")
-    return np.lexsort(keys,axis=axis)
+    idx = np.lexsort([arr[:, k] for k in reversed(keys)])
+    return arr[idx]
 
 def topk(values, k, largest=True, return_indices=False):
     if k <= 0:
