@@ -1,24 +1,88 @@
 #testing StandardScaler and MinMaxScaler with simple numeric data
 import numpy as np
+import pytest
+
 from numcompute.preprocessing import StandardScaler, MinMaxScaler
 
-#simple numeric dataset for testing scaling
-# sample data
-X = np.array([
-    [1, 2],
-    [3, 4],
-    [5, 6]
-])
 
-# StandardScaler
-std_scaler = StandardScaler()
-X_std = std_scaler.fit_transform(X)
+def test_standard_scaler_basic():
+    #simple numeric dataset for testing scaling
+    # sample data
+    X = np.array([
+        [1, 2],
+        [3, 4],
+        [5, 6]
+    ])
 
-print("Original:\n", X)
-print("\nStandard Scaled:\n", X_std)
+    # StandardScaler
+    std_scaler = StandardScaler()
+    X_std = std_scaler.fit_transform(X)
 
-# MinMaxScaler
-minmax_scaler = MinMaxScaler()
-X_minmax = minmax_scaler.fit_transform(X)
+    # mean should be ~0 and std ~1 (column-wise)
+    assert np.allclose(np.mean(X_std, axis=0), [0, 0])
+    assert np.allclose(np.std(X_std, axis=0), [1, 1])
 
-print("\nMinMax Scaled:\n", X_minmax)
+
+def test_minmax_scaler_basic():
+    #simple numeric dataset for testing scaling
+    # sample data
+    X = np.array([
+        [1, 2],
+        [3, 4],
+        [5, 6]
+    ])
+
+    # MinMaxScaler
+    minmax_scaler = MinMaxScaler()
+    X_minmax = minmax_scaler.fit_transform(X)
+
+    # values should be scaled between 0 and 1
+    assert np.allclose(np.min(X_minmax, axis=0), [0, 0])
+    assert np.allclose(np.max(X_minmax, axis=0), [1, 1])
+
+
+def test_standard_scaler_transform_consistency():
+    #simple numeric dataset for testing scaling
+    # sample data
+    X = np.array([
+        [1, 2],
+        [3, 4],
+        [5, 6]
+    ])
+
+    std_scaler = StandardScaler()
+    std_scaler.fit(X)
+
+    X1 = std_scaler.transform(X)
+    X2 = std_scaler.fit_transform(X)
+
+    assert np.allclose(X1, X2)
+
+
+def test_minmax_scaler_transform_consistency():
+    #simple numeric dataset for testing scaling
+    # sample data
+    X = np.array([
+        [1, 2],
+        [3, 4],
+        [5, 6]
+    ])
+
+    minmax_scaler = MinMaxScaler()
+    minmax_scaler.fit(X)
+
+    X1 = minmax_scaler.transform(X)
+    X2 = minmax_scaler.fit_transform(X)
+
+    assert np.allclose(X1, X2)
+
+
+def test_scaler_non_numeric():
+    # Edge case: non-numeric input
+    X = np.array([["a", "b"], ["c", "d"]])
+
+    with pytest.raises(ValueError):
+        StandardScaler().fit_transform(X)
+
+    with pytest.raises(ValueError):
+        MinMaxScaler().fit_transform(X)

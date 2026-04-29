@@ -1,51 +1,56 @@
 import numpy as np
+import pytest
+
 from numcompute.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, ColumnTransformer
 
-X_num = np.array([
-    [1, 2],
-    [3, 4]
-])
 
-X_cat = np.array([
-    ["Red"],
-    ["Blue"]
-])
+def test_standard_scaler_transform_before_fit():
+    X_num = np.array([
+        [1, 2],
+        [3, 4]
+    ])
 
-X_mixed = np.array([
-    [25, "Male"],
-    [30, "Female"]
-])
+    scaler = StandardScaler()
 
-scaler = StandardScaler()
-
-try:
-    scaler.transform(X_num)
-except ValueError as e:
-    print("StandardScaler error:", e)
+    # StandardScaler
+    with pytest.raises(ValueError):
+        scaler.transform(X_num)
 
 
-minmax = MinMaxScaler()
+def test_minmax_scaler_transform_before_fit():
+    X_num = np.array([
+        [1, 2],
+        [3, 4]
+    ])
 
-try:
-    minmax.transform(X_num)
-except ValueError as e:
-    print("MinMaxScaler error:", e)
+    minmax = MinMaxScaler()
 
-
-encoder = OneHotEncoder()
-
-try:
-    encoder.transform(X_cat)
-except ValueError as e:
-    print("OneHotEncoder error:", e)
+    # MinMaxScaler
+    with pytest.raises(ValueError):
+        minmax.transform(X_num)
 
 
+def test_onehot_encoder_transform_before_fit():
+    X_cat = np.array([
+        ["Red"],
+        ["Blue"]
+    ])
 
-ct = ColumnTransformer(num_cols=[0], cat_cols=[1])
+    encoder = OneHotEncoder()
 
-try:
-    ct.transform(X_mixed)
-except ValueError as e:
-    print("ColumnTransformer error:", e)
+    # OneHotEncoder
+    with pytest.raises(ValueError):
+        encoder.transform(X_cat)
 
-    
+
+def test_column_transformer_transform_before_fit():
+    X_mixed = np.array([
+        [25, "Male"],
+        [30, "Female"]
+    ])
+
+    ct = ColumnTransformer(num_cols=[0], cat_cols=[1])
+
+    # ColumnTransformer
+    with pytest.raises(ValueError):
+        ct.transform(X_mixed)
