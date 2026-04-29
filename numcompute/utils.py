@@ -1,5 +1,48 @@
 import numpy as np
 
+def train_test_split(X, y, test_size=0.2, shuffle=True, random_state=None):
+    """
+    Split dataset into training and testing sets.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+    y : array-like of shape (n_samples,)
+    test_size : float, default=0.2
+        Proportion of data to use for testing.
+    shuffle : bool, default=True
+        Whether to shuffle data before splitting.
+    random_state : int or None, default=None
+        Seed for reproducibility.
+
+    Returns
+    -------
+    X_train, X_test, y_train, y_test
+    """
+
+    X = np.asarray(X)
+    y = np.asarray(y)
+
+    if X.shape[0] != len(y):
+        raise ValueError("X and y must have same number of samples")
+
+    if not (0 < test_size < 1):
+        raise ValueError("test_size must be between 0 and 1")
+
+    n_samples = X.shape[0]
+    n_test = int(n_samples * test_size)
+
+    indices = np.arange(n_samples)
+
+    if shuffle:
+        rng = np.random.default_rng(random_state)
+        rng.shuffle(indices)
+
+    test_idx = indices[:n_test]
+    train_idx = indices[n_test:]
+
+    return X[train_idx], X[test_idx], y[train_idx], y[test_idx]
+
 
 def _validate_numeric_array(X, name="Input"):
     # Converts input into numpy array and checks numeric type

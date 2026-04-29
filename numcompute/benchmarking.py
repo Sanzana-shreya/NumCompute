@@ -3,6 +3,7 @@ import csv
 from pathlib import Path
 
 import numpy as np
+import tracemalloc
 
 from numcompute.io import read_csv
 from numcompute.stats import mean, std
@@ -32,6 +33,16 @@ def timer(func, *args, repeat=5):
         times.append(end - start)
 
     return min(times)
+
+def measure_memory(func, *args):
+    tracemalloc.start()
+
+    func(*args)
+
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    return peak / (1024 ** 2)  # Convert to MB
 
 
 def load_numeric_csv(path):
@@ -164,18 +175,26 @@ def benchmark_dataset(name, X):
         ("percentile", loop_percentile, percentile, np.nanpercentile, (flat, 50)),
     ]
 
+    # Loop through all the operations and benchmark each one
     for op, loop_f, my_f, np_f, args in tests:
         t_loop = timer(loop_f, *args)
+        m_loop = measure_memory(loop_f, *args)
+
         t_my = timer(my_f, *args)
+        m_my = measure_memory(my_f, *args)
 
         t_np = timer(np_f, *args) if np_f else None
+        m_np = measure_memory(np_f, *args) if np_f else None
 
         results.append({
             "dataset": name,
             "operation": op,
-            "loop": t_loop,
-            "numcompute": t_my,
-            "numpy": t_np,
+            "loop_time": t_loop,
+            "numcompute_time": t_my,
+            "numpy_time": t_np,
+            "loop_memory": m_loop,
+            "numcompute_memory": m_my,
+            "numpy_memory": m_np,
             "speedup": t_loop / t_my if t_my > 0 else np.inf,
         })
 
@@ -184,38 +203,25 @@ def benchmark_dataset(name, X):
     n_pairwise = min(100, X.shape[0])
     X_small = X[:n_pairwise, :]
 
-    t_loop = timer(loop_pairwise_distances, X_small, X_small)
-    t_my = timer(pairwise_distances, X_small, X_small)
+    t_loop_pairwise = timer(loop_pairwise_distances, X_small, X_small)
+    m_loop_pairwise = measure_memory(loop_pairwise_distances, X_small, X_small)
+
+    t_my_pairwise = timer(pairwise_distances, X_small, X_small)
+    m_my_pairwise = measure_memory(pairwise_distances, X_small, X_small)
 
     results.append({
         "dataset": name,
         "operation": "pairwise_distances",
-        "loop": t_loop,
-        "numcompute": t_my,
-        "numpy": None,
-        "speedup": t_loop / t_my if t_my > 0 else np.inf,
+        "loop_time": t_loop_pairwise,
+        "numcompute_time": t_my_pairwise,
+        "numpy_time": None,
+        "loop_memory": m_loop_pairwise,
+        "numcompute_memory": m_my_pairwise,
+        "numpy_memory": None,
+        "speedup": t_loop_pairwise / t_my_pairwise if t_my_pairwise > 0 else np.inf,
     })
 
     return results
-
-
-def print_results(results):
-    print("\nBENCHMARK RESULTS")
-    print("-" * 95)
-    print(f"{'Dataset':<10}{'Operation':<15}{'Loop':<12}{'NumCompute':<15}{'NumPy':<12}{'Speedup'}")
-    print("-" * 95)
-
-    for r in results:
-        np_val = f"{r['numpy']:.6f}" if r["numpy"] is not None else "N/A"
-
-        print(
-            f"{r['dataset']:<10}"
-            f"{r['operation']:<15}"
-            f"{r['loop']:<12.6f}"
-            f"{r['numcompute']:<15.6f}"
-            f"{np_val:<12}"
-            f"{r['speedup']:.2f}x"
-        )
 
 
 def save_results(results):
@@ -228,13 +234,43 @@ def save_results(results):
 
     print(f"\nSaved to: {out_path}")
 
+def print_results(results):
+    print("\nBENCHMARK RESULTS")
+    print("-" * 120)
 
-def main():
+    print(
+        f"{'Dataset':<10}"
+        f"{'Operation':<20}"
+        f"{'Loop(s)':<10}"
+        f"{'NumComp(s)':<12}"
+        f"{'Loop(MB)':<10}"
+        f"{'NumComp(MB)':<12}"
+        f"{'Speedup'}"
+    )
+
+    print("-" * 120)
+
+    for r in results:
+        print(
+            f"{r['dataset']:<10}"
+            f"{r['operation']:<20}"
+            f"{r['loop_time']:<10.6f}"
+            f"{r['numcompute_time']:<12.6f}"
+            f"{r['loop_memory']:<10.4f}"
+            f"{r['numcompute_memory']:<12.4f}"
+            f"{r['speedup']:.2f}x"
+        )
+
+
+
+def run_benchmarks(datasets, save_csv=True):
     all_results = []
 
-    print("Loading the datasets....\n")
+    print("Loading datasets...\n")
 
-    for name, path in DATASETS.items():
+    for name, path in datasets.items():
+        path = Path(path)
+
         if not path.exists():
             print(f"{name} not found → {path}")
             continue
@@ -245,7 +281,15 @@ def main():
         all_results.extend(benchmark_dataset(name, X))
 
     print_results(all_results)
-    save_results(all_results)
+
+    if save_csv:
+        save_results(all_results)
+
+    return all_results
+
+
+def main():
+    run_benchmarks(DATASETS, save_csv=True)
 
 
 if __name__ == "__main__":

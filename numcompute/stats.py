@@ -62,6 +62,19 @@ def maximum(X: ArrayLike, axis: Optional[int] = None) -> float:  # Compute maxim
     X = _validate_array(X)
     return np.nanmax(X, axis=axis)
 
+# Variance
+def variance(
+    X: ArrayLike,
+    axis: Optional[int] = None
+) -> float:
+    """
+    Compute variance of the data while ignoring NaN values.
+
+    - axis: axis along which variance is computed
+    """
+    X = _validate_array(X)
+    return np.nanvar(X, axis=axis)
+
 
 # Histogram 
 def histogram(
@@ -118,6 +131,8 @@ def describe(
 
     return {
         "mean": mean(X, axis),
+        "median": median(X, axis),
+        "variance": variance(X, axis),
         "std": std(X, axis),
         "min": minimum(X, axis),
         "max": maximum(X, axis),
