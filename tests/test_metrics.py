@@ -1,6 +1,8 @@
 # For metrics.py
 
 import numpy as np
+import pytest
+
 from numcompute.metrics import (
     accuracy, confusion_matrix,
     precision, recall, f1,
@@ -8,91 +10,82 @@ from numcompute.metrics import (
     roc_curve, auc
 )
 
-print("\n===== METRICS TESTS =====")
 
-# Normal Classification 
+def test_classification_metrics():
+    print("\n===== METRICS TESTS =====")
 
-y_true = np.array([1, 0, 1, 1, 0])
-y_pred = np.array([1, 0, 0, 1, 0])
+    # Normal Classification
+    y_true = np.array([1, 0, 1, 1, 0])
+    y_pred = np.array([1, 0, 0, 1, 0])
 
-print("Accuracy:", accuracy(y_true, y_pred))
-print("Confusion Matrix:\n", confusion_matrix(y_true, y_pred))
-print("Precision:", precision(y_true, y_pred))
-print("Recall:", recall(y_true, y_pred))
-print("F1:", f1(y_true, y_pred))
+    # Check accuracy
+    assert np.isclose(accuracy(y_true, y_pred), 0.8)
 
+    # Check confusion matrix shape
+    cm = confusion_matrix(y_true, y_pred)
+    assert cm.shape == (2, 2)
 
-# Edge Case: No positive predictions
-
-try:
-    precision([1, 1, 1], [0, 0, 0])
-except ValueError as e:
-    print("\nPrecision Error:", e)
-
-
-# Edge Case: No actual positives
-
-try:
-    recall([0, 0, 0], [0, 0, 0])
-except ValueError as e:
-    print("Recall Error:", e)
+    # Precision, Recall, F1 should be valid floats
+    assert 0 <= precision(y_true, y_pred) <= 1
+    assert 0 <= recall(y_true, y_pred) <= 1
+    assert 0 <= f1(y_true, y_pred) <= 1
 
 
-# Shape mismatch 
-
-try:
-    accuracy([1, 0], [1, 0, 1])
-except ValueError as e:
-    print("Shape Error:", e)
+def test_precision_no_positive_predictions():
+    # Edge Case: No positive predictions
+    with pytest.raises(ValueError):
+        precision([1, 1, 1], [0, 0, 0])
 
 
-# Regression Tests
-
-y_true = np.array([10, 20, 30])
-y_pred = np.array([12, 18, 33])
-
-print("\nRegression:")
-print("MSE:", mse(y_true, y_pred))
-print("RMSE:", rmse(y_true, y_pred))
-print("MAD:", mad(y_true, y_pred))
-print("MAPE:", mape(y_true, y_pred))
+def test_recall_no_actual_positives():
+    # Edge Case: No actual positives
+    with pytest.raises(ValueError):
+        recall([0, 0, 0], [0, 0, 0])
 
 
-# MAPE Zero Division Case
-
-try:
-    mape([0, 0, 0], [1, 2, 3])
-except ValueError as e:
-    print("MAPE Error:", e)
+def test_shape_mismatch_accuracy():
+    # Shape mismatch
+    with pytest.raises(ValueError):
+        accuracy([1, 0], [1, 0, 1])
 
 
-# ROC Curve
+def test_regression_metrics():
+    # Regression Tests
+    y_true = np.array([10, 20, 30])
+    y_pred = np.array([12, 18, 33])
 
-y_true = np.array([0, 1, 1, 0, 1])
-y_scores = np.array([0.1, 0.9, 0.8, 0.2, 0.7])
-
-fpr, tpr = roc_curve(y_true, y_scores)
-print("\nROC:")
-print("FPR:", fpr)
-print("TPR:", tpr)
-
-
-# AUC 
-
-print("AUC:", auc(fpr, tpr))
+    assert mse(y_true, y_pred) >= 0
+    assert rmse(y_true, y_pred) >= 0
+    assert mad(y_true, y_pred) >= 0
+    assert mape(y_true, y_pred) >= 0
 
 
-# ROC Invalid Case (non-binary)
-
-try:
-    roc_curve([0, 1, 2], [0.1, 0.5, 0.9])
-except ValueError as e:
-    print("ROC Error:", e)
+def test_mape_zero_case():
+    # MAPE Zero Division Case
+    with pytest.raises(ValueError):
+        mape([0, 0, 0], [1, 2, 3])
 
 
-# AUC Shape Mismatch
+def test_roc_curve_valid():
+    # ROC Curve
+    y_true = np.array([0, 1, 1, 0, 1])
+    y_scores = np.array([0.1, 0.9, 0.8, 0.2, 0.7])
 
-try:
-    auc([0, 0.5], [0.1])
-except ValueError as e:
-    print("AUC Error:", e)
+    fpr, tpr = roc_curve(y_true, y_scores)
+
+    # Check valid outputs
+    assert len(fpr) == len(tpr)
+    assert np.all(fpr >= 0)
+    assert np.all(tpr >= 0)
+
+
+def test_roc_invalid_labels():
+    # ROC Invalid Case (non-binary)
+    with pytest.raises(ValueError):
+        roc_curve([0, 1, 2], [0.1, 0.5, 0.9])
+
+
+def test_auc_shape_mismatch():
+    # AUC Shape Mismatch
+    with pytest.raises(ValueError):
+        auc([0, 0.5], [0.1])
