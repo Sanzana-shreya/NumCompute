@@ -1,3 +1,5 @@
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![NumPy](https://img.shields.io/badge/NumPy-Used-orange)
 # NumCompute
 
 A modular, production-grade scientific computing toolkit built using **pure Python + NumPy**.
@@ -74,7 +76,14 @@ Run the benchmark to get the results
 ```bash
 python -m demo.
 ```
+🧪 Testing
 
+Run tests:
+
+```bash
+pip install pytest
+pytest tests/
+```
 
 ## 🧠 Design Principles
 - Vectorisation-first: Avoid Python loops where possible
