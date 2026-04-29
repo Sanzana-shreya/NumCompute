@@ -95,7 +95,7 @@ pytest tests/
 ## 👥 Authors
 - Rashik Iram Chowdhury
 - Sheikh Muhammad Aarib Azfar
-- Farhat Tarannum
-- Sanzana Shreya
+- Syeda Farhat Tarannum
+- Sanzana Mahrukh Hassan
 
 
