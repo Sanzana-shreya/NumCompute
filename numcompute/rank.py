@@ -1,6 +1,40 @@
 import numpy as np
 
+
 def rank(data, method='average'):
+    """
+    Compute ranks of a 1D array with support for different tie-handling strategies.
+
+    Parameters
+    ----------
+    data : array-like of shape (n_samples,)
+        Input array to rank.
+    method : {'average', 'dense', 'ordinal'}, default='average'
+        Method used to assign ranks in case of ties:
+        - 'average': average rank for tied values
+        - 'dense': consecutive ranks without gaps
+        - 'ordinal': ranks assigned in order of appearance
+
+    Returns
+    -------
+    np.ndarray of shape (n_samples,)
+        Array of ranks corresponding to input data. NaN values are preserved.
+
+    Raises
+    ------
+    ValueError
+        If method is invalid or input is not 1D.
+
+    Notes
+    -----
+    - NaN values are excluded from ranking and restored in output.
+    - Stable sorting is used to preserve input order for ties.
+
+    Complexity
+    ----------
+    Time: O(n log n)
+    Space: O(n)
+    """
     if method not in ['average', 'dense', 'ordinal']:
         raise ValueError("Invalid method. Supported methods are: 'average', 'dense', 'ordinal'.")
 
@@ -48,6 +82,42 @@ def rank(data, method='average'):
 
 
 def percentile(data, q, interpolation='linear'):
+    """
+    Compute the q-th percentile of a 1D array with configurable interpolation.
+
+    Parameters
+    ----------
+    data : array-like of shape (n_samples,)
+        Input array.
+    q : float
+        Percentile to compute, must be in the range [0, 100].
+    interpolation : {'linear', 'lower', 'higher', 'midpoint'}, default='linear'
+        Interpolation method:
+        - 'linear': linear interpolation between values
+        - 'lower': lower bound
+        - 'higher': upper bound
+        - 'midpoint': average of lower and upper
+
+    Returns
+    -------
+    float
+        Computed percentile value. Returns NaN if all values are NaN.
+
+    Raises
+    ------
+    ValueError
+        If interpolation method is invalid, input is not 1D, or q is out of bounds.
+
+    Notes
+    -----
+    - NaN values are ignored before computation.
+    - Behavior matches NumPy-style percentile logic.
+
+    Complexity
+    ----------
+    Time: O(n log n)
+    Space: O(n)
+    """
     if interpolation not in ['linear', 'lower', 'higher', 'midpoint']:
         raise ValueError("Invalid interpolation method. Supported methods are: 'linear', 'lower', 'higher', 'midpoint'.")
 
@@ -57,7 +127,7 @@ def percentile(data, q, interpolation='linear'):
         raise ValueError("percentile expects a 1D array")
     if not (0 <= q <= 100):
         raise ValueError("q must be between 0 and 100")
-    
+
     data = data[~np.isnan(data)]
 
     if len(data) == 0:
