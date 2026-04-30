@@ -46,20 +46,20 @@ def multisort(arr: np.ndarray, keys, axis: int = -1) -> np.ndarray:
     ----------
     arr : np.ndarray of shape (n_samples, n_features)
         Input 2D array.
-    keys : sequence of arrays
-        Keys to sort by (last key is primary).
+    keys : sequence of int
+        Column indices to sort by (last key is primary).
     axis : int, default=-1
-        Axis along which sorting is performed.
+        Axis along which sorting is performed (not used explicitly).
 
     Returns
     -------
     np.ndarray
-        Indices that sort the array according to keys.
+        Sorted array.
 
     Raises
     ------
     ValueError
-        If input array is not 2D.
+        If input array is not 2D or keys are invalid.
 
     Notes
     -----
@@ -70,10 +70,25 @@ def multisort(arr: np.ndarray, keys, axis: int = -1) -> np.ndarray:
     Time: O(n log n)
     Space: O(n)
     """
+    arr = np.asarray(arr)
+
     if arr.ndim != 2:
         raise ValueError("Input array must be 2D.")
 
-    return np.lexsort(keys, axis=axis)
+    if not keys:
+        raise ValueError("keys cannot be empty")
+
+    # Validate keys
+    for key in keys:
+        if not isinstance(key, int) or key < 0 or key >= arr.shape[1]:
+            raise ValueError("Invalid key index")
+
+    # Extract columns for lexsort (reverse order because last key is primary)
+    sort_keys = tuple(arr[:, key] for key in reversed(keys))
+
+    order = np.lexsort(sort_keys)
+
+    return arr[order]
 
 
 def topk(
