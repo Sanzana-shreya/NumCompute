@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from numcompute.utils import (
+    train_test_split,
     euclidean_distance,
     manhattan_distance,
     cosine_distance,
@@ -12,6 +13,16 @@ from numcompute.utils import (
     batch_iterator,
 )
 
+def test_train_test_split_shapes():
+    X = np.arange(100).reshape(50, 2)
+    y = np.arange(50)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    assert len(X_test) == 10
+    assert len(X_train) == 40
+    assert len(y_test) == 10
+    assert len(y_train) == 40
 
 def test_euclidean_distance():
     assert np.isclose(euclidean_distance([0, 0], [3, 4]), 5.0)
@@ -129,28 +140,28 @@ def test_batch_iterator_with_y():
     assert np.array_equal(y_batch, np.array([0, 2, 4, 6]))
 
 
-if __name__ == "__main__":
-    test_batch_iterator_invalid_batch_size()
-    test_batch_iterator_y_length_mismatch()
-    test_distance_non_numeric()
-    test_distance_shape_mismatch()
-    test_cosine_zero_vector()
-    test_pairwise_invalid_metric()
-    test_pairwise_feature_mismatch()
-    test_pairwise_manhattan_distance()
-    test_pairwise_cosine_distance()
-    test_pairwise_distances_shape()
-    test_sigmoid_extreme_values()
-    test_softmax_extreme_values()
-    test_logsumexp_stability()
-    test_logsumexp_empty_array()
-    test_batch_iterator()
-    test_batch_iterator_with_y()
-    test_cosine_distance()
-    test_euclidean_distance()
-    test_manhattan_distance()
-    test_softmax_sums_to_one()
+# if __name__ == "__main__":
+#     test_batch_iterator_invalid_batch_size()
+#     test_batch_iterator_y_length_mismatch()
+#     test_distance_non_numeric()
+#     test_distance_shape_mismatch()
+#     test_cosine_zero_vector()
+#     test_pairwise_invalid_metric()
+#     test_pairwise_feature_mismatch()
+#     test_pairwise_manhattan_distance()
+#     test_pairwise_cosine_distance()
+#     test_pairwise_distances_shape()
+#     test_sigmoid_extreme_values()
+#     test_softmax_extreme_values()
+#     test_logsumexp_stability()
+#     test_logsumexp_empty_array()
+#     test_batch_iterator()
+#     test_batch_iterator_with_y()
+#     test_cosine_distance()
+#     test_euclidean_distance()
+#     test_manhattan_distance()
+#     test_softmax_sums_to_one()
 
 
 
-    print("All optim tests have passed.")
+#     print("All optim tests have passed.")

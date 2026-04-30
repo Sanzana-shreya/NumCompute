@@ -106,14 +106,14 @@ def test_jacobian_input_not_modified():
     assert np.array_equal(point, original_point)
 
 
-if __name__ == "__main__":
-    test_grad_central_quadratic_function()
-    test_grad_forward_quadratic_function()
-    test_grad_invalid_method()
-    test_grad_input_not_modified()
-    test_jacobian_central_vector_function()
-    test_jacobian_forward_vector_function()
-    test_jacobian_invalid_method()
-    test_jacobian_input_not_modified()
+# if __name__ == "__main__":
+#     test_grad_central_quadratic_function()
+#     test_grad_forward_quadratic_function()
+#     test_grad_invalid_method()
+#     test_grad_input_not_modified()
+#     test_jacobian_central_vector_function()
+#     test_jacobian_forward_vector_function()
+#     test_jacobian_invalid_method()
+#     test_jacobian_input_not_modified()
 
-    print("All optim tests have passed.")
+#     print("All optim tests have passed.")
