@@ -167,10 +167,15 @@ def test_describe_values_are_correct():
     assert result["max"] == 5
 
 
+import warnings
+
 def test_all_nan_array_returns_nan():
     X = np.array([np.nan, np.nan])
 
-    assert np.isnan(mean(X))
-    assert np.isnan(median(X))
-    assert np.isnan(std(X))
-    assert np.isnan(variance(X))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+
+        assert np.isnan(mean(X))
+        assert np.isnan(median(X))
+        assert np.isnan(std(X))
+        assert np.isnan(variance(X))
