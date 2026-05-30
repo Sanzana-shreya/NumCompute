@@ -32,12 +32,30 @@ def _validate_array(
     return arr
 
 
+def _validate_axis(
+    X: np.ndarray,
+    axis: Optional[int]
+) -> None:
+    """
+    Validate axis argument for NumPy operations.
+    """
+    if axis is None:
+        return
+
+    if not isinstance(axis, int):
+        raise ValueError("axis must be an integer or None")
+
+    if axis < -X.ndim or axis >= X.ndim:
+        raise ValueError(f"axis {axis} is out of bounds for array with ndim {X.ndim}")
+
+
 # Basic Statistics
 
 # Mean
 def mean(X: ArrayLike, axis: Optional[int] = None) -> float:
     # Uses NaN-safe mean to handle missing values in datasets
     X = _validate_array(X)
+    _validate_axis(X, axis)
     return np.nanmean(X, axis=axis)
 
 
@@ -45,6 +63,7 @@ def mean(X: ArrayLike, axis: Optional[int] = None) -> float:
 def median(X: ArrayLike, axis: Optional[int] = None) -> float:
     # Robust to outliers; ignores NaN values
     X = _validate_array(X)
+    _validate_axis(X, axis)
     return np.nanmedian(X, axis=axis)
 
 
@@ -52,6 +71,7 @@ def median(X: ArrayLike, axis: Optional[int] = None) -> float:
 def std(X: ArrayLike, axis: Optional[int] = None) -> float:
     # Measures spread; NaN-safe for real-world datasets
     X = _validate_array(X)
+    _validate_axis(X, axis)
     return np.nanstd(X, axis=axis)
 
 
@@ -59,6 +79,7 @@ def std(X: ArrayLike, axis: Optional[int] = None) -> float:
 def minimum(X: ArrayLike, axis: Optional[int] = None) -> float:
     # Returns smallest value while ignoring missing data
     X = _validate_array(X)
+    _validate_axis(X, axis)
     return np.nanmin(X, axis=axis)
 
 
@@ -66,7 +87,9 @@ def minimum(X: ArrayLike, axis: Optional[int] = None) -> float:
 def maximum(X: ArrayLike, axis: Optional[int] = None) -> float:
     # Returns largest value while ignoring missing data
     X = _validate_array(X)
+    _validate_axis(X, axis)
     return np.nanmax(X, axis=axis)
+
 
 # Variance
 def variance(
@@ -79,10 +102,11 @@ def variance(
     - axis: axis along which variance is computed
     """
     X = _validate_array(X)
+    _validate_axis(X, axis)
     return np.nanvar(X, axis=axis)
 
 
-# Histogram 
+# Histogram
 def histogram(
     X: ArrayLike,
     bins: int = 10,
@@ -101,6 +125,13 @@ def histogram(
     if not isinstance(bins, int) or bins <= 0:
         raise ValueError("bins must be a positive integer")
 
+    if range is not None:
+        if not isinstance(range, tuple) or len(range) != 2:
+            raise ValueError("range must be a tuple of length 2")
+
+        if range[0] >= range[1]:
+            raise ValueError("range minimum must be less than range maximum")
+
     return np.histogram(X, bins=bins, range=range)
 
 
@@ -117,6 +148,7 @@ def quantiles(
     NaN values are ignored for robustness in real datasets.
     """
     X = _validate_array(X)
+    _validate_axis(X, axis)
 
     q_arr = np.asarray(q)
 
@@ -137,11 +169,14 @@ def describe(
 
     Includes:
     - mean
+    - median
+    - variance
     - standard deviation
     - min
     - max
     """
     X = _validate_array(X)
+    _validate_axis(X, axis)
 
     return {
         "mean": mean(X, axis),

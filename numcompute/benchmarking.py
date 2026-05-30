@@ -10,6 +10,10 @@ from numcompute.stats import mean, std
 from numcompute.sort_search import sort, topk
 from numcompute.rank import rank, percentile
 from numcompute.utils import pairwise_distances
+from numcompute.metrics import accuracy
+from numcompute.stream import stream_chunks
+from numcompute.tree import StreamingDecisionTreeClassifier
+from numcompute.ensemble import StreamingRandomForestClassifier
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +37,7 @@ def timer(func, *args, repeat=5):
         times.append(end - start)
 
     return min(times)
+
 
 def measure_memory(func, *args):
     tracemalloc.start()
@@ -78,6 +83,56 @@ def load_numeric_csv(path):
     X = X[np.isfinite(X).all(axis=1)]
 
     return X
+
+
+def load_classification_csv(path):
+    """
+    Load dataset for streaming classification benchmark.
+
+    Assumes:
+    - first row is header
+    - last column is target
+    - non-numeric feature columns are ignored
+    - target is label encoded using NumPy
+    """
+    raw = read_csv(path, delimiter=",", dtype=object)
+    raw = np.asarray(raw, dtype=object)
+
+    if raw.ndim == 1:
+        raw = raw.reshape(-1, 1)
+
+    data = raw[1:, :]
+
+    if data.shape[1] < 2:
+        raise ValueError(f"Dataset must have at least 2 columns: {path}")
+
+    X_raw = data[:, :-1]
+    y_raw = data[:, -1]
+
+    numeric_cols = []
+
+    for i in range(X_raw.shape[1]):
+        col = X_raw[:, i]
+
+        try:
+            numeric_col = col.astype(float)
+            numeric_cols.append(numeric_col)
+        except (ValueError, TypeError):
+            continue
+
+    if not numeric_cols:
+        raise ValueError(f"No numeric feature columns found in {path}")
+
+    X = np.column_stack(numeric_cols)
+
+    # remove bad rows
+    valid_rows = np.isfinite(X).all(axis=1)
+    X = X[valid_rows]
+    y_raw = y_raw[valid_rows]
+
+    classes, y = np.unique(y_raw, return_inverse=True)
+
+    return X, y, classes
 
 
 # ---------------- LOOP BASELINES ---------------- #
@@ -153,7 +208,7 @@ def loop_pairwise_distances(X, Y):
     return np.array(distances)
 
 
-# ---------------- BENCHMARK ---------------- #
+# ---------------- FUNCTION BENCHMARK ---------------- #
 
 def benchmark_dataset(name, X):
     results = []
@@ -175,7 +230,6 @@ def benchmark_dataset(name, X):
         ("percentile", loop_percentile, percentile, np.nanpercentile, (flat, 50)),
     ]
 
-    # Loop through all the operations and benchmark each one
     for op, loop_f, my_f, np_f, args in tests:
         t_loop = timer(loop_f, *args)
         m_loop = measure_memory(loop_f, *args)
@@ -198,8 +252,7 @@ def benchmark_dataset(name, X):
             "speedup": t_loop / t_my if t_my > 0 else np.inf,
         })
 
-    # Pairwise distance benchmark from utils.py
-    # Kept separate because pairwise distance is O(n^2)
+    # Pairwise distance benchmark
     n_pairwise = min(100, X.shape[0])
     X_small = X[:n_pairwise, :]
 
@@ -224,6 +277,87 @@ def benchmark_dataset(name, X):
     return results
 
 
+# ---------------- STREAMING MODEL BENCHMARK ---------------- #
+
+def benchmark_streaming_model(model, X, y, classes, chunk_size=32):
+    """
+    Benchmark one streaming model.
+
+    Returns
+    -------
+    dict
+        Timing, memory, and final accuracy history.
+    """
+    tracemalloc.start()
+    start = time.perf_counter()
+
+    acc_history = []
+    first_chunk = True
+
+    for X_chunk, y_chunk in stream_chunks(X, y, chunk_size=chunk_size, shuffle=False):
+        if not first_chunk:
+            y_pred = model.predict(X_chunk)
+            acc = accuracy(y_chunk, y_pred)
+            acc_history.append(acc)
+
+        if first_chunk:
+            model.partial_fit(X_chunk, y_chunk, classes=np.arange(len(classes)))
+            first_chunk = False
+        else:
+            model.partial_fit(X_chunk, y_chunk)
+
+    end = time.perf_counter()
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    return {
+        "time": end - start,
+        "memory_mb": peak / (1024 ** 2),
+        "final_accuracy": acc_history[-1] if len(acc_history) > 0 else None,
+        "accuracy_history": acc_history,
+    }
+
+
+def benchmark_streaming_dataset(name, X, y, classes, chunk_size=32):
+    """
+    Benchmark decision tree and random forest on streaming data.
+    """
+    results = []
+
+    tree_model = StreamingDecisionTreeClassifier(max_depth=5)
+    rf_model = StreamingRandomForestClassifier(
+        n_estimators=5,
+        max_depth=5,
+        random_state=42
+    )
+
+    tree_result = benchmark_streaming_model(
+        tree_model, X, y, classes, chunk_size=chunk_size
+    )
+
+    rf_result = benchmark_streaming_model(
+        rf_model, X, y, classes, chunk_size=chunk_size
+    )
+
+    results.append({
+        "dataset": name,
+        "model": "StreamingDecisionTreeClassifier",
+        "time": tree_result["time"],
+        "memory_mb": tree_result["memory_mb"],
+        "final_accuracy": tree_result["final_accuracy"],
+    })
+
+    results.append({
+        "dataset": name,
+        "model": "StreamingRandomForestClassifier",
+        "time": rf_result["time"],
+        "memory_mb": rf_result["memory_mb"],
+        "final_accuracy": rf_result["final_accuracy"],
+    })
+
+    return results
+
+
 def save_results(results):
     out_path = ROOT / "benchmark_results.csv"
 
@@ -233,6 +367,18 @@ def save_results(results):
         writer.writerows(results)
 
     print(f"\nSaved to: {out_path}")
+
+
+def save_streaming_results(results):
+    out_path = ROOT / "streaming_benchmark_results.csv"
+
+    with open(out_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=results[0].keys())
+        writer.writeheader()
+        writer.writerows(results)
+
+    print(f"\nSaved to: {out_path}")
+
 
 def print_results(results):
     print("\nBENCHMARK RESULTS")
@@ -262,6 +408,32 @@ def print_results(results):
         )
 
 
+def print_streaming_results(results):
+    print("\nSTREAMING MODEL BENCHMARK RESULTS")
+    print("-" * 90)
+
+    print(
+        f"{'Dataset':<12}"
+        f"{'Model':<35}"
+        f"{'Time(s)':<12}"
+        f"{'Memory(MB)':<15}"
+        f"{'Final Accuracy'}"
+    )
+
+    print("-" * 90)
+
+    for r in results:
+        final_acc = r["final_accuracy"]
+        final_acc_str = f"{final_acc:.4f}" if final_acc is not None else "N/A"
+
+        print(
+            f"{r['dataset']:<12}"
+            f"{r['model']:<35}"
+            f"{r['time']:<12.6f}"
+            f"{r['memory_mb']:<15.4f}"
+            f"{final_acc_str}"
+        )
+
 
 def run_benchmarks(datasets, save_csv=True):
     all_results = []
@@ -272,7 +444,7 @@ def run_benchmarks(datasets, save_csv=True):
         path = Path(path)
 
         if not path.exists():
-            print(f"{name} not found → {path}")
+            print(f"{name} not found -> {path}")
             continue
 
         X = load_numeric_csv(path)
@@ -282,14 +454,48 @@ def run_benchmarks(datasets, save_csv=True):
 
     print_results(all_results)
 
-    if save_csv:
+    if save_csv and len(all_results) > 0:
         save_results(all_results)
+
+    return all_results
+
+
+def run_streaming_benchmarks(datasets, save_csv=True, chunk_size=32):
+    all_results = []
+
+    print("Loading datasets for streaming benchmarks...\n")
+
+    for name, path in datasets.items():
+        path = Path(path)
+
+        if not path.exists():
+            print(f"{name} not found -> {path}")
+            continue
+
+        try:
+            X, y, classes = load_classification_csv(path)
+            print(f"{name}: X shape={X.shape}, y shape={y.shape}")
+
+            results = benchmark_streaming_dataset(
+                name, X, y, classes, chunk_size=chunk_size
+            )
+            all_results.extend(results)
+
+        except Exception as e:
+            print(f"{name} skipped: {e}")
+
+    if len(all_results) > 0:
+        print_streaming_results(all_results)
+
+        if save_csv:
+            save_streaming_results(all_results)
 
     return all_results
 
 
 def main():
     run_benchmarks(DATASETS, save_csv=True)
+    run_streaming_benchmarks(DATASETS, save_csv=True, chunk_size=32)
 
 
 if __name__ == "__main__":

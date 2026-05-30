@@ -14,3 +14,8 @@ This package provides utilities for:
 """
 
 __version__ = "0.1.0"
+
+from .tree import StreamingDecisionTreeClassifier
+from .ensemble import StreamingRandomForestClassifier
+from .stream import stream_chunks, StreamingMetricTracker
+from .visualise import plot_stream_metric, plot_model_comparison

@@ -49,6 +49,18 @@ def test_shape_mismatch_accuracy():
         accuracy([1, 0], [1, 0, 1])
 
 
+def test_empty_accuracy():
+    # Empty input
+    with pytest.raises(ValueError):
+        accuracy([], [])
+
+
+def test_non_numeric_accuracy():
+    # Non-numeric input
+    with pytest.raises(ValueError):
+        accuracy(["a", "b"], ["a", "b"])
+
+
 def test_regression_metrics():
     # Regression Tests
     y_true = np.array([10, 20, 30])
@@ -85,7 +97,25 @@ def test_roc_invalid_labels():
         roc_curve([0, 1, 2], [0.1, 0.5, 0.9])
 
 
+def test_roc_empty_input():
+    # ROC empty input
+    with pytest.raises(ValueError):
+        roc_curve([], [])
+
+
+def test_roc_shape_mismatch():
+    # ROC shape mismatch
+    with pytest.raises(ValueError):
+        roc_curve([0, 1], [0.2])
+
+
 def test_auc_shape_mismatch():
     # AUC Shape Mismatch
     with pytest.raises(ValueError):
         auc([0, 0.5], [0.1])
+
+
+def test_auc_empty_input():
+    # AUC empty input
+    with pytest.raises(ValueError):
+        auc([], [])

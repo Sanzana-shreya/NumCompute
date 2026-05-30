@@ -6,9 +6,15 @@ class Pipeline:
     fit(X)
     transform(X)
 
+    Optional streaming support:
+    partial_fit(X) or partial_fit(X, y)
+
     Final estimator must implement:
     fit(X, y)
     predict(X)
+
+    Optional streaming support:
+    partial_fit(X, y)
     """
 
     def __init__(self, steps):
@@ -38,6 +44,77 @@ class Pipeline:
             last_step.fit(X_current, y)
         else:
             last_step.fit(X_current)
+
+        return self
+
+    def partial_fit(self, X, y=None, classes=None):
+        """
+        Incrementally fit the pipeline on a chunk of data.
+
+        Parameters
+        ----------
+        X : array-like
+            Input features.
+        y : array-like, optional
+            Target values.
+        classes : array-like, optional
+            Class labels for incremental classifiers on the first call.
+
+        Returns
+        -------
+        self
+            Fitted pipeline.
+        """
+        X_current = X
+
+        # Partial fit or transform intermediate steps
+        for name, step in self.steps[:-1]:
+            if not hasattr(step, "transform"):
+                raise ValueError(f"Step '{name}' must implement transform")
+
+            if hasattr(step, "partial_fit"):
+                # Try partial_fit(X, y), else partial_fit(X)
+                try:
+                    if y is not None:
+                        step.partial_fit(X_current, y)
+                    else:
+                        step.partial_fit(X_current)
+                except TypeError:
+                    step.partial_fit(X_current)
+
+            elif hasattr(step, "fit"):
+                # fallback for non-streaming transformers:
+                # fit once, then reuse transform
+                if not hasattr(step, "_pipeline_fitted"):
+                    step.fit(X_current)
+                    step._pipeline_fitted = True
+            else:
+                raise ValueError(f"Step '{name}' must implement fit or partial_fit")
+
+            X_current = step.transform(X_current)
+
+        # Partial fit final estimator
+        last_name, last_step = self.steps[-1]
+
+        if hasattr(last_step, "partial_fit"):
+            try:
+                if classes is not None:
+                    last_step.partial_fit(X_current, y, classes=classes)
+                else:
+                    last_step.partial_fit(X_current, y)
+            except TypeError:
+                if y is not None:
+                    last_step.partial_fit(X_current, y)
+                else:
+                    last_step.partial_fit(X_current)
+
+        elif hasattr(last_step, "fit"):
+            if y is not None:
+                last_step.fit(X_current, y)
+            else:
+                last_step.fit(X_current)
+        else:
+            raise ValueError(f"Final step '{last_name}' must implement fit or partial_fit")
 
         return self
 

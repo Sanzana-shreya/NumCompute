@@ -27,7 +27,7 @@ def _validate_inputs(
     Raises
     ------
     ValueError
-        If inputs are None, non-numeric, or shapes mismatch.
+        If inputs are None, non-numeric, empty, or shapes mismatch.
 
     Notes
     -----
@@ -43,14 +43,24 @@ def _validate_inputs(
 
     y_true = np.asarray(y_true)
 
+    if y_true.size == 0:
+        raise ValueError("y_true cannot be empty")
+
     if not np.issubdtype(y_true.dtype, np.number):
         raise ValueError("y_true must be numeric")
+
+    y_true = y_true.ravel()
 
     if y_pred is not None:
         y_pred = np.asarray(y_pred)
 
+        if y_pred.size == 0:
+            raise ValueError("y_pred cannot be empty")
+
         if not np.issubdtype(y_pred.dtype, np.number):
             raise ValueError("y_pred must be numeric")
+
+        y_pred = y_pred.ravel()
 
         if y_true.shape != y_pred.shape:
             raise ValueError(
@@ -60,7 +70,7 @@ def _validate_inputs(
     return y_true, y_pred
 
 
-# For Classification Metrics 
+# For Classification Metrics
 
 # Accuracy
 def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -329,7 +339,7 @@ def mape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return float(np.mean(np.abs((y_true - y_pred) / y_true)) * 100)
 
 
-# For ROC Curve (Binary) 
+# For ROC Curve (Binary)
 
 def roc_curve(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -356,15 +366,21 @@ def roc_curve(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[np.ndarray, np.
     """
 
     #y_scores: probability scores (not labels)
-    
+
     if y_true is None or y_scores is None:
         raise ValueError("Inputs cannot be None")
 
-    y_true = np.asarray(y_true)
-    y_scores = np.asarray(y_scores)
+    y_true = np.asarray(y_true).ravel()
+    y_scores = np.asarray(y_scores).ravel()
+
+    if y_true.size == 0 or y_scores.size == 0:
+        raise ValueError("Inputs cannot be empty")
 
     if y_true.shape != y_scores.shape:
         raise ValueError("y_true and y_scores must have the same shape")
+
+    if not np.issubdtype(y_scores.dtype, np.number):
+        raise ValueError("y_scores must be numeric")
 
     # EnsureS binary labels
     unique = np.unique(y_true)
@@ -390,7 +406,7 @@ def roc_curve(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[np.ndarray, np.
     return fpr, tpr
 
 
-# For AUC 
+# For AUC
 
 def auc(fpr: np.ndarray, tpr: np.ndarray) -> float:
     """
@@ -415,14 +431,20 @@ def auc(fpr: np.ndarray, tpr: np.ndarray) -> float:
     """
 
     # Trapezoidal rule
-    
-    fpr = np.asarray(fpr)
-    tpr = np.asarray(tpr)
+
+    fpr = np.asarray(fpr).ravel()
+    tpr = np.asarray(tpr).ravel()
+
+    if fpr.size == 0 or tpr.size == 0:
+        raise ValueError("fpr and tpr cannot be empty")
 
     if fpr.shape != tpr.shape:
         raise ValueError("fpr and tpr must have the same shape")
 
     if len(fpr) < 2:
         raise ValueError("At least two points required to compute AUC")
+
+    if hasattr(np, "trapezoid"):
+        return float(np.trapezoid(tpr, fpr))
 
     return float(np.trapz(tpr, fpr))

@@ -21,6 +21,7 @@ class Imputer:
     Time Complexity
     ---------------
     fit: O(n_samples * n_features)
+    partial_fit: O(total_seen_samples * n_features)
     transform: O(n_samples * n_features)
     """
 
@@ -31,7 +32,7 @@ class Imputer:
         self.strategy = strategy
         self.fill_value = fill_value
         self.statistics = None
-  
+        self._X_seen = None
 
     def fit(self, X):
         """
@@ -75,7 +76,36 @@ class Imputer:
             self.statistics
         )
 
+        self._X_seen = X.copy()
+
         return self
+
+    def partial_fit(self, X):
+        """
+        Incrementally update replacement statistics.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+
+        Returns
+        -------
+        self : Imputer
+        """
+        X = np.asarray(X, dtype=float)
+
+        if X.ndim != 2:
+            raise ValueError("Imputer expects a 2D array")
+
+        if self._X_seen is None:
+            self._X_seen = X.copy()
+        else:
+            if X.shape[1] != self._X_seen.shape[1]:
+                raise ValueError("X has different number of columns than fitted data")
+
+            self._X_seen = np.vstack([self._X_seen, X])
+
+        return self.fit(self._X_seen)
 
     def transform(self, X):
         """
@@ -136,12 +166,14 @@ class StandardScaler:
     Time Complexity
     ---------------
     fit: O(n_samples * n_features)
+    partial_fit: O(total_seen_samples * n_features)
     transform: O(n_samples * n_features)
     """
 
     def __init__(self):
         self.mean = None
         self.std = None
+        self._X_seen = None
 
     def fit(self, X):
         """
@@ -166,7 +198,36 @@ class StandardScaler:
         # Avoid division by zero for constant columns
         self.std = np.where(self.std == 0, 1, self.std)
 
+        self._X_seen = X.copy()
+
         return self
+
+    def partial_fit(self, X):
+        """
+        Incrementally update mean and standard deviation.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+
+        Returns
+        -------
+        self : StandardScaler
+        """
+        X = np.asarray(X, dtype=float)
+
+        if X.ndim != 2:
+            raise ValueError("StandardScaler expects a 2D array")
+
+        if self._X_seen is None:
+            self._X_seen = X.copy()
+        else:
+            if X.shape[1] != self._X_seen.shape[1]:
+                raise ValueError("X has different number of columns than fitted data")
+
+            self._X_seen = np.vstack([self._X_seen, X])
+
+        return self.fit(self._X_seen)
 
     def transform(self, X):
         """
@@ -216,6 +277,7 @@ class MinMaxScaler:
     Time Complexity
     ---------------
     fit: O(n_samples * n_features)
+    partial_fit: O(total_seen_samples * n_features)
     transform: O(n_samples * n_features)
     """
 
@@ -230,6 +292,7 @@ class MinMaxScaler:
         self.min = None
         self.max = None
         self.range = None
+        self._X_seen = None
 
     def fit(self, X):
         """
@@ -255,7 +318,36 @@ class MinMaxScaler:
         # Avoid division by zero for constant columns
         self.range = np.where(self.range == 0, 1, self.range)
 
+        self._X_seen = X.copy()
+
         return self
+
+    def partial_fit(self, X):
+        """
+        Incrementally update minimum and maximum values.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+
+        Returns
+        -------
+        self : MinMaxScaler
+        """
+        X = np.asarray(X, dtype=float)
+
+        if X.ndim != 2:
+            raise ValueError("MinMaxScaler expects a 2D array")
+
+        if self._X_seen is None:
+            self._X_seen = X.copy()
+        else:
+            if X.shape[1] != self._X_seen.shape[1]:
+                raise ValueError("X has different number of columns than fitted data")
+
+            self._X_seen = np.vstack([self._X_seen, X])
+
+        return self.fit(self._X_seen)
 
     def transform(self, X):
         """
@@ -304,11 +396,13 @@ class OneHotEncoder:
     Time Complexity
     ---------------
     fit: O(n_samples * n_features log n_samples)
+    partial_fit: O(total_seen_samples * n_features log total_seen_samples)
     transform: O(n_samples * total_categories)
     """
 
     def __init__(self):
         self.categories = None
+        self._X_seen = None
 
     def fit(self, X):
         """
@@ -328,8 +422,36 @@ class OneHotEncoder:
             raise ValueError("OneHotEncoder expects a 2D array")
 
         self.categories = [np.unique(X[:, i]) for i in range(X.shape[1])]
+        self._X_seen = X.copy()
 
         return self
+
+    def partial_fit(self, X):
+        """
+        Incrementally update learned categories.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+
+        Returns
+        -------
+        self : OneHotEncoder
+        """
+        X = np.asarray(X, dtype=object)
+
+        if X.ndim != 2:
+            raise ValueError("OneHotEncoder expects a 2D array")
+
+        if self._X_seen is None:
+            self._X_seen = X.copy()
+        else:
+            if X.shape[1] != self._X_seen.shape[1]:
+                raise ValueError("X has different number of columns than fitted data")
+
+            self._X_seen = np.vstack([self._X_seen, X])
+
+        return self.fit(self._X_seen)
 
     def transform(self, X):
         """
@@ -397,6 +519,7 @@ class ColumnTransformer:
     Time Complexity
     ---------------
     fit: O(n_samples * n_features)
+    partial_fit: O(total_seen_samples * n_features)
     transform: O(n_samples * transformed_features)
     """
 
@@ -467,6 +590,44 @@ class ColumnTransformer:
         if len(self.cat_cols) > 0:
             X_cat = X[:, self.cat_cols]
             self.encoder.fit(X_cat)
+
+        return self
+
+    def partial_fit(self, X, y=None):
+        """
+        Incrementally update numeric and categorical preprocessing components.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+        y : ignored
+            Included for pipeline compatibility.
+
+        Returns
+        -------
+        self : ColumnTransformer
+        """
+        X = np.asarray(X, dtype=object)
+
+        if X.ndim != 2:
+            raise ValueError("ColumnTransformer expects a 2D array")
+
+        # Auto-detect columns if not provided
+        if self.num_cols is None and self.cat_cols is None:
+            self.num_cols, self.cat_cols = self._detect_columns(X)
+
+        self.num_cols = [] if self.num_cols is None else self.num_cols
+        self.cat_cols = [] if self.cat_cols is None else self.cat_cols
+
+        if len(self.num_cols) > 0:
+            X_num = X[:, self.num_cols].astype(float)
+            self.imputer.partial_fit(X_num)
+            X_num = self.imputer.transform(X_num)
+            self.scaler.partial_fit(X_num)
+
+        if len(self.cat_cols) > 0:
+            X_cat = X[:, self.cat_cols]
+            self.encoder.partial_fit(X_cat)
 
         return self
 
