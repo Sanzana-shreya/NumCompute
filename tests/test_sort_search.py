@@ -25,6 +25,12 @@ def test_stable_sort_duplicates():
     assert np.array_equal(sorted_arr, np.array([1, 1, 2, 2]))
 
 
+def test_sort_empty_array():
+    arr = np.array([])
+    sorted_arr = sort(arr)
+    assert np.array_equal(sorted_arr, np.array([]))
+
+
 # =========================
 # MULTISORT TESTS
 # =========================
@@ -47,6 +53,12 @@ def test_multisort_basic():
     assert np.array_equal(sorted_arr, expected)
 
 
+def test_multisort_invalid_input():
+    arr = np.array([1, 2, 3])
+
+    with pytest.raises(ValueError):
+        multisort(arr, keys=[0])
+
 
 # =========================
 # TOP-K TESTS
@@ -62,7 +74,7 @@ def test_topk_largest():
 
 def test_topk_smallest():
     arr = np.array([5, 1, 3, 7, 2])
-    vals= topk(arr, 2, largest=False)
+    vals = topk(arr, 2, largest=False)
     print(vals)
 
     assert set(vals) == {1, 2}
@@ -70,7 +82,7 @@ def test_topk_smallest():
 
 def test_topk_k_equals_n():
     arr = np.array([3, 1, 2])
-    vals= topk(arr, 3)
+    vals = topk(arr, 3)
 
     assert len(vals) == 3
 
@@ -136,5 +148,3 @@ def test_binary_search_insert_position():
     idx, _ = binary_search(arr, 3)
 
     assert idx == 2
-
-

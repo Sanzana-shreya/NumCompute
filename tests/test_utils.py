@@ -13,6 +13,7 @@ from numcompute.utils import (
     batch_iterator,
 )
 
+
 def test_train_test_split_shapes():
     X = np.arange(100).reshape(50, 2)
     y = np.arange(50)
@@ -23,6 +24,7 @@ def test_train_test_split_shapes():
     assert len(X_train) == 40
     assert len(y_test) == 10
     assert len(y_train) == 40
+
 
 def test_euclidean_distance():
     assert np.isclose(euclidean_distance([0, 0], [3, 4]), 5.0)
@@ -37,20 +39,20 @@ def test_cosine_distance():
 
 
 def test_pairwise_distances_shape():
-    X = np.array([[0, 0], [3, 4]])
+    X = np.array([[0, 0], [3, 4]], dtype=float)
     D = pairwise_distances(X, metric="euclidean")
     assert D.shape == (2, 2)
     assert np.isclose(D[0, 1], 5.0)
 
 
 def test_softmax_sums_to_one():
-    x = np.array([[1, 2, 3], [2, 4, 6]])
+    x = np.array([[1, 2, 3], [2, 4, 6]], dtype=float)
     result = softmax(x, axis=1)
     assert np.allclose(np.sum(result, axis=1), 1.0)
 
 
 def test_logsumexp_stability():
-    x = np.array([1000, 1000])
+    x = np.array([1000, 1000], dtype=float)
     result = logsumexp(x)
     assert np.isfinite(result)
 
@@ -78,27 +80,27 @@ def test_cosine_zero_vector():
 
 
 def test_pairwise_invalid_metric():
-    X = np.array([[1, 2], [3, 4]])
+    X = np.array([[1, 2], [3, 4]], dtype=float)
     with pytest.raises(ValueError):
         pairwise_distances(X, metric="invalid")
 
 
 def test_pairwise_feature_mismatch():
-    X = np.array([[1, 2]])
-    Y = np.array([[1, 2, 3]])
+    X = np.array([[1, 2]], dtype=float)
+    Y = np.array([[1, 2, 3]], dtype=float)
     with pytest.raises(ValueError):
         pairwise_distances(X, Y)
 
 
 def test_sigmoid_extreme_values():
-    x = np.array([-1000, 0, 1000])
+    x = np.array([-1000, 0, 1000], dtype=float)
     result = sigmoid(x)
     assert np.all(np.isfinite(result))
     assert np.isclose(result[1], 0.5)
 
 
 def test_softmax_extreme_values():
-    x = np.array([1000, 1001, 1002])
+    x = np.array([1000, 1001, 1002], dtype=float)
     result = softmax(x)
     assert np.all(np.isfinite(result))
     assert np.isclose(np.sum(result), 1.0)
@@ -120,13 +122,13 @@ def test_batch_iterator_y_length_mismatch():
 
 
 def test_pairwise_manhattan_distance():
-    X = np.array([[0, 0], [1, 1]])
+    X = np.array([[0, 0], [1, 1]], dtype=float)
     D = pairwise_distances(X, metric="manhattan")
     assert np.isclose(D[0, 1], 2.0)
 
 
 def test_pairwise_cosine_distance():
-    X = np.array([[1, 0], [0, 1]])
+    X = np.array([[1, 0], [0, 1]], dtype=float)
     D = pairwise_distances(X, metric="cosine")
     assert np.isclose(D[0, 1], 1.0)
 
@@ -161,7 +163,4 @@ def test_batch_iterator_with_y():
 #     test_euclidean_distance()
 #     test_manhattan_distance()
 #     test_softmax_sums_to_one()
-
-
-
 #     print("All optim tests have passed.")

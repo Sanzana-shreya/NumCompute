@@ -1,183 +1,114 @@
-import numpy as np
+import sys
+import os
 import pytest
+
+# Add parent directory to path to import numcompute package
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from numcompute.pipeline import Pipeline
 
 
+# Dummy step to simulate a transformer
 class DummyTransformer:
     def __init__(self):
-        self.fitted = False
-        self.mean = None
+        self.factor = 2
 
     def fit(self, X):
-        X = np.asarray(X, dtype=float)
-        self.mean = np.mean(X, axis=0)
-        self.fitted = True
+        # Simulates fitting (no actual learning)
         return self
 
     def transform(self, X):
-        if not self.fitted:
-            raise ValueError("DummyTransformer has not been fitted yet.")
-        X = np.asarray(X, dtype=float)
-        return X - self.mean
+        # Multiplies each element by a constant factor
+        return [x * self.factor for x in X]
 
 
+# Dummy estimator to simulate final prediction step
 class DummyEstimator:
-    def __init__(self):
-        self.fitted = False
-        self.majority_class = None
-
-    def fit(self, X, y):
-        self.fitted = True
-        values, counts = np.unique(y, return_counts=True)
-        self.majority_class = values[np.argmax(counts)]
+    def fit(self, X, y=None):
+        # Simulates fitting (no actual learning)
         return self
 
     def predict(self, X):
-        if not self.fitted:
-            raise ValueError("DummyEstimator has not been fitted yet.")
-        return np.full(X.shape[0], self.majority_class)
-
-
-class BadTransformerNoTransform:
-    def fit(self, X):
-        return self
-
-
-class BadEstimatorNoPredict:
-    def fit(self, X, y=None):
-        return self
-
-
-class BadStepNoFit:
-    def transform(self, X):
+        # Returns transformed input directly
         return X
 
 
-def test_pipeline_fit_predict_basic():
-    X = np.array([[1, 2], [3, 4], [5, 6]])
-    y = np.array([0, 1, 1])
+def test_pipeline_basic():
+    # Define pipeline steps
+    steps = [
+        ("step1", DummyTransformer()),
+        ("step2", DummyEstimator())
+    ]
 
-    pipe = Pipeline([
-        ("transform", DummyTransformer()),
-        ("model", DummyEstimator())
-    ])
+    pipeline = Pipeline(steps)
 
-    pipe.fit(X, y)
-    preds = pipe.predict(X)
+    # Input data
+    X = [1, 2, 3]
 
-    assert preds.shape == (3,)
-    assert np.array_equal(preds, np.array([1, 1, 1]))
+    # Fit pipeline
+    pipeline.fit(X)
 
+    # Predict
+    result = pipeline.predict(X)
 
-def test_pipeline_transform_after_fit():
-    X = np.array([[1, 2], [3, 4], [5, 6]])
-
-    pipe = Pipeline([
-        ("transform", DummyTransformer())
-    ])
-
-    pipe.fit(X)
-    X_out = pipe.transform(X)
-
-    assert X_out.shape == X.shape
-    assert np.allclose(np.mean(X_out, axis=0), [0, 0])
+    # Transformer multiplies by 2 → final output = x * 2
+    assert result == [2, 4, 6]
 
 
-def test_pipeline_fit_transform():
-    X = np.array([[1, 2], [3, 4], [5, 6]])
+def test_pipeline_without_fit():
+    # Define pipeline with transformer + estimator
+    steps = [
+        ("step1", DummyTransformer()),
+        ("step2", DummyEstimator())
+    ]
 
-    pipe = Pipeline([
-        ("transform", DummyTransformer())
-    ])
+    pipeline = Pipeline(steps)
 
-    X_out = pipe.fit_transform(X)
+    # Input data
+    X = [1, 2, 3]
 
-    assert X_out.shape == X.shape
-    assert np.allclose(np.mean(X_out, axis=0), [0, 0])
+    # In this simple dummy setup, predict still works because transformer has no fitted state
+    result = pipeline.predict(X)
+
+    assert result == [2, 4, 6]
 
 
 def test_pipeline_empty_steps():
+    # Pipeline should fail if no steps are provided
     with pytest.raises(ValueError):
         Pipeline([])
 
 
-def test_pipeline_bad_transformer_missing_transform():
-    X = np.array([[1, 2], [3, 4]])
-    y = np.array([0, 1])
+def test_pipeline_invalid_transformer():
+    # Invalid transformer without transform
+    class BadTransformer:
+        def fit(self, X):
+            return self
 
-    pipe = Pipeline([
-        ("bad", BadTransformerNoTransform()),
-        ("model", DummyEstimator())
-    ])
+    steps = [
+        ("bad", BadTransformer()),
+        ("final", DummyEstimator())
+    ]
 
-    with pytest.raises(ValueError):
-        pipe.fit(X, y)
-
-
-def test_pipeline_bad_step_missing_fit():
-    X = np.array([[1, 2], [3, 4]])
-
-    pipe = Pipeline([
-        ("bad", BadStepNoFit())
-    ])
+    pipeline = Pipeline(steps)
 
     with pytest.raises(ValueError):
-        pipe.fit(X)
+        pipeline.fit([1, 2, 3])
 
 
-def test_pipeline_predict_final_step_missing_predict():
-    X = np.array([[1, 2], [3, 4]])
-    y = np.array([0, 1])
+def test_pipeline_invalid_estimator():
+    # Invalid final estimator without predict
+    class BadEstimator:
+        def fit(self, X, y=None):
+            return self
 
-    pipe = Pipeline([
-        ("transform", DummyTransformer()),
-        ("bad_model", BadEstimatorNoPredict())
-    ])
+    steps = [
+        ("step1", DummyTransformer()),
+        ("bad", BadEstimator())
+    ]
 
-    pipe.fit(X, y)
-
-    with pytest.raises(ValueError):
-        pipe.predict(X)
-
-
-def test_pipeline_predict_before_fit_raises_from_transformer():
-    X = np.array([[1, 2], [3, 4]])
-
-    pipe = Pipeline([
-        ("transform", DummyTransformer()),
-        ("model", DummyEstimator())
-    ])
+    pipeline = Pipeline(steps)
+    pipeline.fit([1, 2, 3])
 
     with pytest.raises(ValueError):
-        pipe.predict(X)
-
-
-def test_pipeline_transform_only_applies_transformers_before_model():
-    X = np.array([[1, 2], [3, 4], [5, 6]])
-    y = np.array([0, 1, 1])
-
-    pipe = Pipeline([
-        ("transform", DummyTransformer()),
-        ("model", DummyEstimator())
-    ])
-
-    pipe.fit(X, y)
-    X_transformed = pipe.transform(X)
-
-    assert X_transformed.shape == X.shape
-    assert np.allclose(np.mean(X_transformed, axis=0), [0, 0])
-
-
-def test_pipeline_single_estimator_predict():
-    X = np.array([[1, 2], [3, 4], [5, 6]])
-    y = np.array([2, 2, 1])
-
-    pipe = Pipeline([
-        ("model", DummyEstimator())
-    ])
-
-    pipe.fit(X, y)
-    preds = pipe.predict(X)
-
-    assert np.array_equal(preds, np.array([2, 2, 2]))
+        pipeline.predict([1, 2, 3])

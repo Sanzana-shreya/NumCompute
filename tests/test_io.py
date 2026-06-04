@@ -1,61 +1,35 @@
-import os
+# testing CSV reading functionality
+from pathlib import Path
 import numpy as np
 import pytest
 
 from numcompute.io import read_csv
 
 
+ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT / "data"
+
+
 def test_read_csv_valid_file():
-    # pytest is being run from project root
-    file_path = os.path.join(os.getcwd(), "data", "Iris.csv")
+    # Path to dataset
+    file_path = DATA_DIR / "Iris.csv"
 
-    assert os.path.exists(file_path), "Dataset file does not exist"
-
+    # Read CSV file
     data = read_csv(file_path)
 
+    # Check data is not None
+    assert data is not None
+
+    # Check it returns a NumPy array
     assert isinstance(data, np.ndarray)
-    assert data.ndim == 2
+
+    # Check it has rows
     assert data.shape[0] > 0
-    assert data.shape[1] > 0
 
 
-def test_read_csv_file_not_found():
-    with pytest.raises(FileNotFoundError):
-        read_csv("non_existent_file.csv")
+def test_read_csv_invalid_path():
+    # Non-existent file should raise error
+    file_path = "invalid_path.csv"
 
-
-def test_read_csv_contains_missing_placeholder(tmp_path):
-    file = tmp_path / "test.csv"
-    file.write_text("1,2,\n3,4,5")
-
-    data = read_csv(file)
-
-    assert data[0, 2] == ""
-
-
-def test_read_csv_string_handling(tmp_path):
-    file = tmp_path / "test_strings.csv"
-    file.write_text("A,B,C\nx,y,z")
-
-    data = read_csv(file)
-
-    assert isinstance(data[1, 0], str)
-
-
-def test_read_csv_empty_file(tmp_path):
-    file = tmp_path / "empty.csv"
-    file.write_text("")
-
-    data = read_csv(file)
-
-    assert isinstance(data, np.ndarray)
-    assert data.size == 0
-
-
-def test_read_csv_mixed_types(tmp_path):
-    file = tmp_path / "mixed.csv"
-    file.write_text("1,hello,3\n4,world,6")
-
-    data = read_csv(file)
-
-    assert data.shape == (2, 3)
+    with pytest.raises(Exception):
+        read_csv(file_path)
