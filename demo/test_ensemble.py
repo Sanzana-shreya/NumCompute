@@ -112,4 +112,4 @@ def test_rf_without_bootstrap():
     model.fit(X, y)
 
     y_pred = model.predict(X)
-    assert y_pred.shape == y.shape
+    assert y_pred.shape == y.shape 

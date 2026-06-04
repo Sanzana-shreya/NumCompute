@@ -112,3 +112,15 @@ def test_pipeline_partial_fit_case():
 
     y_pred = pipe.predict(X)
     assert y_pred.shape == y.shape
+
+
+def test_stream_chunks_shuffle_case():
+    # Shuffle chunking
+    X = np.arange(20).reshape(10, 2)
+    y = np.arange(10)
+
+    chunks = list(stream_chunks(X, y, chunk_size=5, shuffle=True, random_state=42))
+
+    assert len(chunks) == 2
+    assert chunks[0][0].shape[0] == 5
+    assert chunks[1][0].shape[0] == 5

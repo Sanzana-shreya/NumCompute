@@ -25,5 +25,4 @@ def test_plot_model_comparison_save():
             save_path=path,
             show=False
         )
-
         assert os.path.exists(path)

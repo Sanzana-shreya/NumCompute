@@ -118,4 +118,4 @@ def test_auc_shape_mismatch():
 def test_auc_empty_input():
     # AUC empty input
     with pytest.raises(ValueError):
-        auc([], [])
+        auc([], []) 

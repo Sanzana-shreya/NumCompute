@@ -8,7 +8,7 @@ def test_standard_scaler_transform_before_fit():
     X_num = np.array([
         [1, 2],
         [3, 4]
-    ])
+    ], dtype=float)
 
     scaler = StandardScaler()
 
@@ -21,7 +21,7 @@ def test_minmax_scaler_transform_before_fit():
     X_num = np.array([
         [1, 2],
         [3, 4]
-    ])
+    ], dtype=float)
 
     minmax = MinMaxScaler()
 
@@ -34,7 +34,7 @@ def test_onehot_encoder_transform_before_fit():
     X_cat = np.array([
         ["Red"],
         ["Blue"]
-    ])
+    ], dtype=object)
 
     encoder = OneHotEncoder()
 
@@ -47,7 +47,7 @@ def test_column_transformer_transform_before_fit():
     X_mixed = np.array([
         [25, "Male"],
         [30, "Female"]
-    ])
+    ], dtype=object)
 
     ct = ColumnTransformer(num_cols=[0], cat_cols=[1])
 

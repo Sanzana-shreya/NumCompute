@@ -1,4 +1,4 @@
-#testing OneHotEmcoder with simple categorical data
+# testing OneHotEncoder with simple categorical data
 import numpy as np
 import pytest
 
@@ -12,7 +12,7 @@ def test_onehot_encoder_basic():
         ["Blue", "M"],
         ["Red", "M"],
         ["Green", "S"]
-    ])
+    ], dtype=object)
 
     encoder = OneHotEncoder()
 
@@ -37,7 +37,7 @@ def test_onehot_encoder_shape_expansion():
     X = np.array([
         ["Red", "S"],
         ["Blue", "M"]
-    ])
+    ], dtype=object)
 
     encoder = OneHotEncoder()
 
@@ -48,14 +48,70 @@ def test_onehot_encoder_shape_expansion():
 
 
 def test_onehot_encoder_invalid_input():
-    # Invalid input (non-string mixed type)
-    X = np.array([
-        [1, 2],
-        [3, 4]
-    ])
+    # Invalid input (1D input)
+    X = np.array(["Red", "Blue"], dtype=object)
 
     encoder = OneHotEncoder()
 
-    # Should raise error for non-categorical data
-    with pytest.raises(Exception):
+    # Should raise error for invalid input shape
+    with pytest.raises(ValueError):
         encoder.fit_transform(X)
+
+
+def test_onehot_encoder_transform_before_fit():
+    # Transform before fit
+    X = np.array([
+        ["Red", "S"],
+        ["Blue", "M"]
+    ], dtype=object)
+
+    encoder = OneHotEncoder()
+
+    # Should raise error because encoder is not fitted
+    with pytest.raises(ValueError):
+        encoder.transform(X)
+
+
+def test_onehot_encoder_partial_fit():
+    # partial_fit with categorical data
+    X1 = np.array([
+        ["Red", "S"],
+        ["Blue", "M"]
+    ], dtype=object)
+
+    X2 = np.array([
+        ["Green", "L"]
+    ], dtype=object)
+
+    encoder = OneHotEncoder()
+
+    # Incremental fit
+    encoder.partial_fit(X1)
+    encoder.partial_fit(X2)
+
+    X_encoded = encoder.transform(X1)
+
+    # Check output exists
+    assert X_encoded is not None
+
+    # Check output is numeric
+    assert np.issubdtype(X_encoded.dtype, np.number)
+
+
+def test_onehot_encoder_column_mismatch():
+    # Different number of columns at transform time
+    X_train = np.array([
+        ["Red", "S"],
+        ["Blue", "M"]
+    ], dtype=object)
+
+    X_test = np.array([
+        ["Red"]
+    ], dtype=object)
+
+    encoder = OneHotEncoder()
+    encoder.fit(X_train)
+
+    # Should raise error because number of columns differs
+    with pytest.raises(ValueError):
+        encoder.transform(X_test)

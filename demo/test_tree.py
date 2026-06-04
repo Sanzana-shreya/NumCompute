@@ -155,4 +155,4 @@ def test_tree_single_class_case():
     model.fit(X, y)
 
     y_pred = model.predict(X)
-    assert np.all(y_pred == 1)
+    assert np.all(y_pred == 1)  

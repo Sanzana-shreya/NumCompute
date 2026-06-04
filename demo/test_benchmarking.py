@@ -16,4 +16,4 @@ def test_benchmark_streaming_model():
     assert isinstance(result, dict)
     assert "time" in result
     assert "memory_mb" in result
-    assert "accuracy_history" in result
+    assert "accuracy_history" in result 

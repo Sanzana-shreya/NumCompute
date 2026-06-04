@@ -1,9 +1,8 @@
-#testing pipeline with preprocessing on mixed data
+# testing pipeline with preprocessing on mixed data
 import numpy as np
 import pytest
 
 from numcompute.pipeline import Pipeline
-from numcompute.preprocessing import StandardScaler
 from numcompute.preprocessing import OneHotEncoder
 
 
@@ -13,7 +12,7 @@ def test_pipeline_with_onehot_encoder():
         [25, "Male"],
         [30, "Female"],
         [22, "Female"]
-    ])
+    ], dtype=object)
 
     # pipeline applying encoding step
     pipe = Pipeline([
@@ -36,7 +35,7 @@ def test_pipeline_with_encoder_without_fit():
     X = np.array([
         [25, "Male"],
         [30, "Female"]
-    ])
+    ], dtype=object)
 
     pipe = Pipeline([
         ("encode", OneHotEncoder())

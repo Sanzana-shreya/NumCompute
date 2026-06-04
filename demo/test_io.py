@@ -1,13 +1,18 @@
 # testing CSV reading functionality
+from pathlib import Path
 import numpy as np
 import pytest
 
 from numcompute.io import read_csv
 
 
+ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT / "data"
+
+
 def test_read_csv_valid_file():
-    # Path to dataset (update if needed in your system)
-    file_path = r"C:\Users\aarib\OneDrive\Documents\AdelUni\Semester 1\ProgrammingAI\programming_task_1\data\Iris.csv"
+    # Path to dataset
+    file_path = DATA_DIR / "Iris.csv"
 
     # Read CSV file
     data = read_csv(file_path)
