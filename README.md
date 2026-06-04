@@ -1,8 +1,8 @@
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![NumPy](https://img.shields.io/badge/NumPy-Used-orange)
-# NumCompute
+# NumCompute-Stream
 
-A modular, production-grade scientific computing toolkit built using **pure Python + NumPy**.
+A Modularised Ensemble Tree-based Streaming Machine Learning Framework **pure Python + NumPy + matplotlib**.
 
 Built from scratch using only NumPy, without external ML libraries. This project implements core components of a machine learning framework, including data handling, preprocessing, sorting/search algorithms, statistics, evaluation metrics, and pipeline abstraction — all from scratch with a strong focus on **vectorisation, numerical stability, and clean software design**.
 
@@ -92,10 +92,7 @@ pytest tests/
 - Reusability: Components work independently and in pipelines
 
 
-## 👥 Authors
-- Rashik Iram Chowdhury
-- Sheikh Muhammad Aarib Azfar
-- Syeda Farhat Tarannum
+## 👥 Author
 - Sanzana Mahrukh Hassan
 
 
