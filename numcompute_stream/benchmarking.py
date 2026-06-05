@@ -5,15 +5,15 @@ from pathlib import Path
 import numpy as np
 import tracemalloc
 
-from numcompute.io import read_csv
-from numcompute.stats import mean, std
-from numcompute.sort_search import sort, topk
-from numcompute.rank import rank, percentile
-from numcompute.utils import pairwise_distances
-from numcompute.metrics import accuracy
-from numcompute.stream import stream_chunks
-from numcompute.tree import StreamingDecisionTreeClassifier
-from numcompute.ensemble import StreamingRandomForestClassifier
+from numcompute_stream.io import read_csv
+from numcompute_stream.stats import mean, std
+from numcompute_stream.sort_search import sort, topk
+from numcompute_stream.rank import rank, percentile
+from numcompute_stream.utils import pairwise_distances
+from numcompute_stream.metrics import accuracy
+from numcompute_stream import stream_chunks
+from numcompute_stream.tree import StreamingDecisionTreeClassifier
+from numcompute_stream.ensemble import StreamingRandomForestClassifier
 
 
 ROOT = Path(__file__).resolve().parents[1]

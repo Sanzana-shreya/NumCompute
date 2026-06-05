@@ -11,7 +11,7 @@ def stream_chunks(
     """
     Yield data in chunks to simulate streaming.
 
-    Parameters
+    Parameters 
     ----------
     X : np.ndarray of shape (n_samples, n_features)
     y : np.ndarray of shape (n_samples,)
