@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from numcompute.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, ColumnTransformer
+from numcompute_stream.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, ColumnTransformer
 
 
 def test_standard_scaler_transform_before_fit():

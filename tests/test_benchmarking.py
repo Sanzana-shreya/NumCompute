@@ -1,7 +1,7 @@
 import numpy as np
 
-from numcompute.benchmarking import benchmark_streaming_model
-from numcompute.tree import StreamingDecisionTreeClassifier
+from numcompute_stream.benchmarking import benchmark_streaming_model
+from numcompute_stream.tree import StreamingDecisionTreeClassifier
 
 
 def test_benchmark_streaming_model():

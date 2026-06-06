@@ -5,7 +5,7 @@ import pytest
 # Add parent directory to path to import numcompute package
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from numcompute.pipeline import Pipeline
+from numcompute_stream.pipeline import Pipeline
 
 
 # Dummy step to simulate a transformer

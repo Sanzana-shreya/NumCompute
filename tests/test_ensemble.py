@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from numcompute.ensemble import StreamingRandomForestClassifier
+from numcompute_stream.ensemble import StreamingRandomForestClassifier
 
 
 # For ensemble.py

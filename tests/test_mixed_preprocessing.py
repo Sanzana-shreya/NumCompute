@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from numcompute.preprocessing import StandardScaler, OneHotEncoder
+from numcompute_stream.preprocessing import StandardScaler, OneHotEncoder
 
 
 def test_separate_preprocessing_and_combination():

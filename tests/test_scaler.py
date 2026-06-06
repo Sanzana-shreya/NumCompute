@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from numcompute.preprocessing import StandardScaler, MinMaxScaler
+from numcompute_stream.preprocessing import StandardScaler, MinMaxScaler
 
 
 def test_standard_scaler_basic():

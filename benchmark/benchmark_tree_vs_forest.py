@@ -10,8 +10,8 @@ PROJECT_ROOT = os.path.abspath(
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from numcompute.tree import StreamingDecisionTreeClassifier
-from numcompute.ensemble import StreamingRandomForestClassifier
+from numcompute_stream.tree import StreamingDecisionTreeClassifier
+from numcompute_stream.ensemble import StreamingRandomForestClassifier
 
 
 def make_synthetic_stream(

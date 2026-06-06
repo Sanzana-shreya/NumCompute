@@ -2,8 +2,8 @@
 import numpy as np
 import pytest
 
-from numcompute.pipeline import Pipeline
-from numcompute.preprocessing import OneHotEncoder
+from numcompute_stream.pipeline import Pipeline
+from numcompute_stream.preprocessing import OneHotEncoder
 
 
 def test_pipeline_with_onehot_encoder():

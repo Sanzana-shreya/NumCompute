@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from numcompute.preprocessing import (
+from numcompute_stream.preprocessing import (
     Imputer,
     StandardScaler,
     MinMaxScaler,

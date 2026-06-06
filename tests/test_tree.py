@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from numcompute.tree import StreamingDecisionTreeClassifier
+from numcompute_stream.tree import StreamingDecisionTreeClassifier
 
 
 # For tree.py

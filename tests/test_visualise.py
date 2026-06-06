@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from numcompute.visualise import plot_stream_metric, plot_model_comparison
+from numcompute_stream.visualise import plot_stream_metric, plot_model_comparison
 
 
 # For visualise.py

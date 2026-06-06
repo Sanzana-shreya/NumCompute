@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from numcompute.stream import stream_chunks, StreamingMetricTracker
-from numcompute.pipeline import Pipeline
-from numcompute.tree import StreamingDecisionTreeClassifier
+from numcompute_stream.stream import stream_chunks, StreamingMetricTracker
+from numcompute_stream.pipeline import Pipeline
+from numcompute_stream.tree import StreamingDecisionTreeClassifier
 
 
 # For stream.py

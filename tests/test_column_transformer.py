@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from numcompute.preprocessing import ColumnTransformer
+from numcompute_stream.preprocessing import ColumnTransformer
 
 
 def test_column_transformer_basic():

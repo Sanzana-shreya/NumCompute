@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from numcompute.metrics import (
+from numcompute_stream.metrics import (
     accuracy, confusion_matrix,
     precision, recall, f1,
     mse, rmse, mad, mape,

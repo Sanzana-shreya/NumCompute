@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from numcompute.preprocessing import OneHotEncoder
+from numcompute_stream.preprocessing import OneHotEncoder
 
 
 def test_onehot_encoder_basic():

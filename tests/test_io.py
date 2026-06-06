@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from numcompute.io import read_csv
+from numcompute_stream.io import read_csv
 
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from numcompute.stats import (
+from numcompute_stream.stats import (
     mean, median, std, variance,
     minimum, maximum, histogram,
     quantiles, describe
