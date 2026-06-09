@@ -14,55 +14,24 @@ NumCompute‑Stream extends the original NumCompute package into a **full machin
 - **Modular API design**  
 - **Real‑time visualisation tools**
 
-All components — preprocessing, statistics, metrics, models, and pipelines — are designed to be **incremental, numerically stable, and shape‑consistent**, enabling real‑world online learning scenarios.
+All components — preprocessing, statistics, metrics, models, and pipelines — are designed to be **incremental, numerically stable, and shape‑consistent**, enabling real‑world online learning scenarios.Previous components were also kept as this version of NumCompute-Stream is an extension of previously created NumCompute.
 
 ---
+# 📘 Overview
 
-# 🧩 System Architecture
+**NumCompute‑Stream** (also installable as **`numstream`**) is a fully modular, NumPy‑only machine learning framework supporting:
 
-flowchart TD
-    A[CSV or Streaming Data] --> B[Preprocessing: Scaling, Encoding, NaN Handling]
-    B --> C[Pipeline API: fit, transform, predict]
-    C --> D[Streaming Decision Tree]
-    C --> E[Streaming Random Forest]
-    D --> F[Predictions]
-    E --> F
-    F --> G[Metrics: Accuracy, F1, MSE]
-    G --> H[Visualisation Module]
+- **Streaming learning** (incremental, chunk‑wise updates)  
+- **Decision Trees + Random Forests**  
+- **Vectorised computation**  
+- **Numerical stability**  
+- **Real‑time visualisation**  
+- **Pipeline API**  
+- **Benchmarking tools**  
 
+This framework was built from scratch using only **NumPy + matplotlib**, with no external ML libraries.
 
-
-# 🔄 Streaming Workflow
-
-sequenceDiagram
-    participant U as Data Stream
-    participant P as Preprocessing
-    participant M as Model
-    participant T as Metrics
-    participant V as Visualiser
-
-    U->>P: Load next chunk
-    P->>M: Transform and update model
-    M->>T: Predict and update metrics
-    T->>V: Update plots
-    V->>U: Next chunk
-
-# 📊 Model Comparison (Tree vs Forest)
-
-graph LR
-    A[Decision Tree\nAccuracy: 0.9067\nFit: 1.07s\nPredict: 0.0006s]
-    B[Random Forest\nAccuracy: 0.7067\nFit: 3.14s\nPredict: 0.0037s]
-
-    A --- B
-
-
-    
-# ⚡ Vectorisation Speedup (Loop vs NumPy)
-graph TD
-    L[Python Loops\nMean: 0.0957s\nVar: 0.3378s]
-    V[Vectorised NumPy\nMean: 0.00044s\nVar: 0.00469s]
-
-    L -->|217x faster| V
+---
 
 # 🚀 Features
 # 📥 Data I/O
@@ -169,24 +138,6 @@ python benchmark/benchmark_tree_vs_forest.py
 # 👥 Author
 Sanzana Mahrukh Hassan
 
-# 📘 NumCompute‑Stream  
-### *A Modularised Ensemble Tree‑based Streaming Machine Learning Framework*  
-#### **also published as: `numstream`**
-
----
-
-# 🎓 Academic Logo
-
-
-███╗   ██╗██╗   ██╗███╗   ███╗███████╗████████╗████████╗██████╗ ███████╗
-████╗  ██║██║   ██║████╗ ████║██╔════╝╚══██╔══╝╚══██╔══╝██╔══██╗██╔════╝
-██╔██╗ ██║██║   ██║██╔████╔██║█████╗     ██║      ██║   ██████╔╝█████╗
-██║╚██╗██║██║   ██║██║╚██╔╝██║██╔══╝     ██║      ██║   ██╔══██╗██╔══╝
-██║ ╚████║╚██████╔╝██║ ╚═╝ ██║███████╗   ██║      ██║   ██║  ██║███████╗
-╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝      ╚═╝   ╚═╝  ╚═╝╚══════╝
-
-
-*A research‑grade machine learning framework built entirely with NumPy.*
 
 ---
 
@@ -205,18 +156,4 @@ Sanzana Mahrukh Hassan
 
 ---
 
-# 📘 Overview
 
-**NumCompute‑Stream** (also installable as **`numstream`**) is a fully modular, NumPy‑only machine learning framework supporting:
-
-- **Streaming learning** (incremental, chunk‑wise updates)  
-- **Decision Trees + Random Forests**  
-- **Vectorised computation**  
-- **Numerical stability**  
-- **Real‑time visualisation**  
-- **Pipeline API**  
-- **Benchmarking tools**  
-
-This framework was built from scratch using only **NumPy + matplotlib**, with no external ML libraries.
-
----
