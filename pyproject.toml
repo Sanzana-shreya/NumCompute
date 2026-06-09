@@ -3,20 +3,18 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "numcompute"
-version = "0.1.0"
-description = "A modular scientific computing toolkit using NumPy"
+name = "numstream"
+version = "0.2.0"
+description = "A modularised ensemble tree-based streaming ML framework built with NumPy"
 authors = [
-    { name = "Sheikh Muhammad Aarib Azfar", email = "aaribazfar@gmail.com" },
-    { name = "Rashik Iram Chowdhury", email = "rashikiramchowdhury1@gmail.com" },
-    { name = "Farhat Tarannum", email = "tarannumfarhat11@gmail.com" },
-    { name = "Sanzana Shreya", email = "sanzanamahrukhhassanshreya@gmail.com" }
+    { name = "Sanzana Mahrukh Hassan", email = "sanzanamahrukhhassanshreya@gmail.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 dependencies = [
-    "numpy"
+    "numpy",
+    "matplotlib"
 ]
 
 [tool.setuptools.packages.find]
