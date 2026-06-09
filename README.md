@@ -21,14 +21,15 @@ All components — preprocessing, statistics, metrics, models, and pipelines —
 # 🧩 System Architecture
 
 flowchart TD
-    A[CSV / Streaming Data] --> B[Preprocessing: Scaling, Encoding, NaN Handling]
+    A[CSV or Streaming Data] --> B[Preprocessing: Scaling, Encoding, NaN Handling]
     B --> C[Pipeline API: fit, transform, predict]
     C --> D[Streaming Decision Tree]
     C --> E[Streaming Random Forest]
     D --> F[Predictions]
     E --> F
     F --> G[Metrics: Accuracy, F1, MSE]
-    G --> H[Visualisation Module: Accuracy Curves, Chunk Tracking]
+    G --> H[Visualisation Module]
+
 
 # 🔄 Streaming Workflow
 
