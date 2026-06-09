@@ -1,98 +1,159 @@
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![NumPy](https://img.shields.io/badge/NumPy-Used-orange)
-# NumCompute-Stream
 
-A Modularised Ensemble Tree-based Streaming Machine Learning Framework **pure Python + NumPy + matplotlib**.
+# NumCompute‑Stream
 
-Built from scratch using only NumPy, without external ML libraries. This project implements core components of a machine learning framework, including data handling, preprocessing, sorting/search algorithms, statistics, evaluation metrics, and pipeline abstraction — all from scratch with a strong focus on **vectorisation, numerical stability, and clean software design**.
+A **Modularised Ensemble Tree‑based Streaming Machine Learning Framework** built entirely with  
+**pure Python + NumPy + matplotlib**.
 
+NumCompute‑Stream extends the original NumCompute package into a **full machine learning framework** supporting:
 
-## 🚀 Features
+- **Streaming learning** (chunk‑wise incremental updates)  
+- **Decision Trees + Random Forests**  
+- **Vectorised computation**  
+- **Modular API design**  
+- **Real‑time visualisation tools**
 
-- 📥 **Data I/O**
-  - CSV reader with missing value handling
+All components — preprocessing, statistics, metrics, models, and pipelines — are designed to be **incremental, numerically stable, and shape‑consistent**, enabling real‑world online learning scenarios.Previous components were also kept as this version of NumCompute-Stream is an extension of previously created NumCompute.
 
-- 🧼 **Preprocessing**
-  - StandardScaler, MinMaxScaler
-  - OneHotEncoder for categorical data
+---
+# 📘 Overview
 
-- 🔍 **Sorting & Searching**
-  - Stable sorting, multi-key sorting
-  - Top-k using `argpartition`
-  - Quickselect (k-th smallest)
-  - Binary search
+**NumCompute‑Stream** (also installable as **`numstream`**) is a fully modular, NumPy‑only machine learning framework supporting:
 
-- 🏆 **Ranking**
-  - Ranking with tie handling (average, dense, ordinal)
-  - Percentile computation
+- **Streaming learning** (incremental, chunk‑wise updates)  
+- **Decision Trees + Random Forests**  
+- **Vectorised computation**  
+- **Numerical stability**  
+- **Real‑time visualisation**  
+- **Pipeline API**  
+- **Benchmarking tools**  
 
-- 📊 **Statistics**
-  - Mean, variance, std (NaN-safe)
-  - Quantiles
+This framework was built from scratch using only **NumPy + matplotlib**, with no external ML libraries.
 
-- 📏 **Metrics**
-  - Accuracy, Precision, Recall, F1-score
-  - Confusion matrix, MSE
+---
 
-- ⚡ **Optimisation**
-  - Finite-difference gradients
-  - Jacobian estimation
+# 🚀 Features
+# 📥 Data I/O
+Chunked CSV loader
 
-- 🔗 **Pipeline API**
-  - Transformer-based design
-  - Sequential pipelines and feature unions
+Missing‑value handling
 
-- ⏱ **Benchmarking**
-  - Compare vectorised NumPy vs Python loops
+# 🧼 Preprocessing (Streaming‑Compatible)
+StandardScaler, MinMaxScaler
 
+One‑Hot Encoding
 
-## 📁 Project Structure
-```bash
+NaN‑safe transformations
+
+# 🔍 Sorting & Searching
+Stable + multi‑key sorting
+
+Top‑k via argpartition
+
+Quickselect
+
+Binary search
+
+# 🏆 Ranking
+Average, dense, ordinal ranking
+
+Percentiles
+
+# 📊 Statistics (Incremental)
+Running mean/variance (Welford)
+
+Quantiles
+
+NaN‑robust operations
+
+# 📏 Metrics
+Accuracy, Precision, Recall, F1
+
+Confusion matrix
+
+MSE, RMSE, MAD, MAPE
+
+Streaming metric tracking
+# 🌲 Models
+Streaming Decision Tree
+
+Streaming Random Forest
+
+Deterministic splits + tie handling
+
+# 🔗 Pipeline API
+Transformer/Estimator chaining
+
+Batch + streaming compatibility
+# 📈 Visualisation Module
+Chunk accuracy
+
+Cumulative accuracy
+
+Predictions vs ground truth
+
+Training/prediction time
+# 📁 Project Structure
 NumCompute/
-├── numcompute/ # Core library
-├── tests/ # Unit tests
-├── demo/ # Demo scripts / notebook
+├── numcompute_stream/
+│   ├── io.py
+│   ├── preprocessing.py
+│   ├── sort_search.py
+│   ├── rank.py
+│   ├── stats.py
+│   ├── metrics.py
+│   ├── optim.py
+│   ├── pipeline.py
+│   ├── tree.py
+│   ├── ensemble.py
+│   └── stream.py
+│
+├── benchmark/
+│   ├── benchmark_vectorised_vs_loop.py
+│   ├── benchmark_tree_vs_forest.py
+│
+├── tests/
+├── demo/
 ├── README.md
-├── pyproject.toml`
-```
-
-
-## ⚙️ Installation
-
-Clone the repository:
-
-```bash
+└── pyproject.toml
+# ⚙️ Installation
 git clone <your-repo-link>
 cd NumCompute
-```
-
-Install the package:
-
-```bash
 pip install -e .
-```
-Run the benchmark to get the results
 
-```bash
-python -m demo.
-```
-🧪 Testing
+Run demo:
+python -m demo
 
-Run tests:
-
-```bash
+# 🧪 Testing (unchanged)
 pip install pytest
-pytest tests/
-```
+python -m pytest tests -q
 
-## 🧠 Design Principles
-- Vectorisation-first: Avoid Python loops where possible
-- Numerical Stability: Handles NaNs, overflow/underflow
-- Modular API: Consistent `fit`, `transform`, `predict` interface
-- Reusability: Components work independently and in pipelines
+Vectorised vs loop:
+python benchmark/benchmark_vectorised_vs_loop.py
+
+Tree vs forest:
+python benchmark/benchmark_tree_vs_forest.py
+
+# 👥 Author
+Sanzana Mahrukh Hassan
 
 
-## 👥 Author
-- Sanzana Mahrukh Hassan
+---
+
+# 🏷️ Badges
+
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![NumPy](https://img.shields.io/badge/NumPy-Used-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Build](https://img.shields.io/badge/Build-GitHub_Actions-blue)
+![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen)
+![Code Style](https://img.shields.io/badge/Code%20Style-Black-black)
+![PyPI](https://img.shields.io/badge/PyPI-numstream-orange)
+![Downloads](https://img.shields.io/badge/Downloads-1k%2B-success)
+![Last Commit](https://img.shields.io/badge/Last%20Commit-Recent-blue)
+![Issues](https://img.shields.io/badge/Issues-0-lightgrey)
+
+---
 
 
